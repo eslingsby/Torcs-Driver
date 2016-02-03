@@ -1,0 +1,9 @@
+/build
+/bin
+
+*.filter
+*.opensdf
+*.sdf
+*.user
+*.suo
+*.zip
