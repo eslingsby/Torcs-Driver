@@ -13,10 +13,9 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
+
 /* Uncomment the following lines under windows */
 #define WIN32 // maybe not necessary because already define
-#define __DRIVER_CLASS__ SimpleDriver     // put here the name of your driver class
-#define __DRIVER_INCLUDE__ "SimpleDriver.h" // put here the filename of your driver h\\eader
 
 #ifdef WIN32
 #include <WinSock.h>
@@ -29,7 +28,9 @@
 #include <iostream>
 #include <cstdlib>
 #include <cstdio>
-#include __DRIVER_INCLUDE__
+#include "SimpleParser.h"
+
+#include "Setup.hpp"
 
 /*** defines for UDP *****/
 #define UDP_MSGLEN 1000
@@ -47,10 +48,6 @@ typedef struct sockaddr_in tSockAddrIn;
 #define CLOSE(x) close(x)
 #define INVALID(x) x < 0
 #endif
-
-class __DRIVER_CLASS__;
-typedef __DRIVER_CLASS__ tDriver;
-
 
 using namespace std;
 
@@ -134,7 +131,7 @@ int main(int argc, char *argv[])
     if (stage == BaseDriver::WARMUP)
 		cout << "STAGE: WARMUP" << endl;
 	else if (stage == BaseDriver::QUALIFYING)
-		cout << "STAGE:QUALIFYING" << endl;
+		cout << "STAGE: QUALIFYING" << endl;
 	else if (stage == BaseDriver::RACE)
 		cout << "STAGE: RACE" << endl;
 	else
@@ -155,9 +152,17 @@ int main(int argc, char *argv[])
            hostInfo->h_addr_list[0], hostInfo->h_length);
     serverAddress.sin_port = htons(serverPort);
 
-    tDriver d;
-    strcpy(d.trackName,trackName);
-    d.stage = stage;
+	
+
+	// Setup function
+
+	BaseDriver* d = setup(argc, argv);
+
+	if (d == nullptr)
+		return 1;
+
+    strcpy(d->trackName,trackName);
+	d->stage = stage;
 
     bool shutdownClient=false;
     unsigned long curEpisode=0;
@@ -170,7 +175,7 @@ int main(int argc, char *argv[])
         {
         	// Initialize the angles of rangefinders
         	float angles[19];
-        	d.init(angles);
+			d->init(angles);
         	string initString = SimpleParser::stringify(string("init"),angles,19);
             cout << "Sending id to server: " << id << endl;
             initString.insert(0,id);
@@ -238,7 +243,7 @@ int main(int argc, char *argv[])
 
                 if (strcmp(buf,"***shutdown***")==0)
                 {
-                    d.onShutdown();
+					d->onShutdown();
                     shutdownClient = true;
                     cout << "Client Shutdown" << endl;
                     break;
@@ -246,7 +251,7 @@ int main(int argc, char *argv[])
 
                 if (strcmp(buf,"***restart***")==0)
                 {
-                    d.onRestart();
+					d->onRestart();
                     cout << "Client Restart" << endl;
                     break;
                 }
@@ -256,7 +261,7 @@ int main(int argc, char *argv[])
 
 		if ( (++currentStep) != maxSteps)
 		{
-                	string action = d.drive(string(buf));
+                	string action = d->drive(string(buf));
                 	memset(buf, 0x0, UDP_MSGLEN);
 			sprintf(buf,"%s",action.c_str());
 		}
@@ -284,7 +289,7 @@ int main(int argc, char *argv[])
     } while(shutdownClient==false && ( (++curEpisode) != maxEpisodes) );
 
     if (shutdownClient==false)
-	d.onShutdown();
+	d->onShutdown();
     CLOSE(socketDescriptor);
 #ifdef WIN32
     WSACleanup();
