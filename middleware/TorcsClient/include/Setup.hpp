@@ -5,7 +5,7 @@
 BaseDriver* setup(int argc, char *argv[]);
 
 #ifdef _DEBUG
-#pragma comment(lib, "../bin/SimpleClientd.lib")
+#pragma comment(lib, "../bin/TorcsClientd.lib")
 #else
-#pragma comment(lib, "../bin/SimpleClient.lib")
+#pragma comment(lib, "../bin/TorcsClient.lib")
 #endif

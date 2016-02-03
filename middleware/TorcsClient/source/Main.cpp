@@ -14,9 +14,6 @@
  *                                                                         *
  ***************************************************************************/
 
-/* Uncomment the following lines under windows */
-#define WIN32 // maybe not necessary because already define
-
 #ifdef WIN32
 #include <WinSock.h>
 #else

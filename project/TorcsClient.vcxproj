@@ -13,7 +13,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{AC249247-EC0A-409E-8C81-487B130AF76C}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>SimpleClient</RootNamespace>
+    <RootNamespace>TorcsClient</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -41,7 +41,6 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)middleware\FANN-2.2.0\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)bin;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)bin\</OutDir>
     <IntDir>$(SolutionDir)build\$(Configuration)\$(ProjectName)\</IntDir>
@@ -49,7 +48,6 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)middleware\FANN-2.2.0\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)bin;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)bin\</OutDir>
     <IntDir>$(SolutionDir)build\$(Configuration)\$(ProjectName)\</IntDir>
@@ -61,7 +59,8 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)middleware\SimpleClient\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)middleware\TorcsClient\include</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4244;4996;4006;4221;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -70,6 +69,7 @@
     </Link>
     <Lib>
       <AdditionalDependencies>WS2_32.lib;fanndoubled.lib;fannfixedd.lib;fannfloatd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>/ignore:4006,4221</AdditionalOptions>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -81,7 +81,8 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)middleware\SimpleClient\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)middleware\TorcsClient\include</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4244;4996;4006;4221;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -92,22 +93,23 @@
     </Link>
     <Lib>
       <AdditionalDependencies>WS2_32.lib;fanndouble.lib;fannfixed.lib;fannfloat.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>/ignore:4006,4221</AdditionalOptions>
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="$(SolutionDir)middleware\SimpleClient\include\BaseDriver.h" />
-    <ClInclude Include="$(SolutionDir)middleware\SimpleClient\include\CarControl.h" />
-    <ClInclude Include="$(SolutionDir)middleware\SimpleClient\include\CarState.h" />
-    <ClInclude Include="$(SolutionDir)middleware\SimpleClient\include\SimpleParser.h" />
-    <ClInclude Include="$(SolutionDir)middleware\SimpleClient\include\WrapperBaseDriver.h" />
-    <ClInclude Include="$(SolutionDir)middleware\SimpleClient\include\Setup.hpp" />
+    <ClInclude Include="$(SolutionDir)middleware\TorcsClient\include\BaseDriver.h" />
+    <ClInclude Include="$(SolutionDir)middleware\TorcsClient\include\CarControl.h" />
+    <ClInclude Include="$(SolutionDir)middleware\TorcsClient\include\CarState.h" />
+    <ClInclude Include="$(SolutionDir)middleware\TorcsClient\include\SimpleParser.h" />
+    <ClInclude Include="$(SolutionDir)middleware\TorcsClient\include\WrapperBaseDriver.h" />
+    <ClInclude Include="$(SolutionDir)middleware\TorcsClient\include\Setup.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="$(SolutionDir)middleware\SimpleClient\source\CarControl.cpp" />
-    <ClCompile Include="$(SolutionDir)middleware\SimpleClient\source\CarState.cpp" />
-    <ClCompile Include="$(SolutionDir)middleware\SimpleClient\source\Main.cpp" />
-    <ClCompile Include="$(SolutionDir)middleware\SimpleClient\source\SimpleParser.cpp" />
-    <ClCompile Include="$(SolutionDir)middleware\SimpleClient\source\WrapperBaseDriver.cpp" />
+    <ClCompile Include="$(SolutionDir)middleware\TorcsClient\source\CarControl.cpp" />
+    <ClCompile Include="$(SolutionDir)middleware\TorcsClient\source\CarState.cpp" />
+    <ClCompile Include="$(SolutionDir)middleware\TorcsClient\source\Main.cpp" />
+    <ClCompile Include="$(SolutionDir)middleware\TorcsClient\source\SimpleParser.cpp" />
+    <ClCompile Include="$(SolutionDir)middleware\TorcsClient\source\WrapperBaseDriver.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
