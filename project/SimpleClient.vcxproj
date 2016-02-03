@@ -97,7 +97,6 @@
     <ClInclude Include="$(SolutionDir)middleware\SimpleClient\include\SimpleDriver.h" />
     <ClInclude Include="$(SolutionDir)middleware\SimpleClient\include\SimpleParser.h" />
     <ClInclude Include="$(SolutionDir)middleware\SimpleClient\include\WrapperBaseDriver.h" />
-    <ClInclude Include="Setup.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(SolutionDir)middleware\SimpleClient\source\ANNdataGather.cpp" />

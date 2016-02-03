@@ -1,1 +1,0 @@
-int setup(int argc, char *argv[]);
