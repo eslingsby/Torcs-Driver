@@ -27,7 +27,7 @@
 #include <cstdio>
 #include "SimpleParser.h"
 
-#include "Setup.hpp"
+#include "Setup.h"
 
 /*** defines for UDP *****/
 #define UDP_MSGLEN 1000
@@ -305,8 +305,8 @@ void parse_args(int argc, char *argv[], char *hostName, unsigned int &serverPort
     // Set default values
     maxEpisodes=0;
     maxSteps=0;
-    serverPort=3001;
-    strcpy(hostName,"localhost");
+    serverPort=0;
+   strcpy(hostName,"");
     strcpy(id,"SCR");
 //    noise=false;
 //    noiseAVG=0;
@@ -314,6 +314,9 @@ void parse_args(int argc, char *argv[], char *hostName, unsigned int &serverPort
 //    seed=0;
     strcpy(trackName,"unknown");
     stage=BaseDriver::UNKNOWN;
+
+
+	
 
 
     i = 1;
@@ -367,4 +370,47 @@ void parse_args(int argc, char *argv[], char *hostName, unsigned int &serverPort
     		i++;		/* ignore bad args */
     	}
     }
+
+	if (serverPort == 0 || hostName == ""){
+		// Get user input for IP and port
+		bool input = true;
+
+		while (input){
+			cout << "Enter Hostname (default 'localhost'): ";
+
+			if (cin.peek() == '\n')
+				strcpy(hostName, "localhost");
+			else
+				cin >> hostName;
+
+			cin.ignore();
+
+
+			cout << "Enter Port Number (default '3001'): ";
+
+			if (cin.peek() == '\n')
+				serverPort = 3001;
+			else
+				cin >> serverPort;
+
+			cin.ignore();
+
+			cout << endl << "Connecting to '" << hostName << " : " << serverPort << "'." << endl;
+			cout << endl << "Is this correct? (y/n): ";
+
+			string answer;
+
+			if (cin.peek() == '\n')
+				answer = "y";
+			else
+				cin >> answer;
+
+			if (answer != "n")
+				input = false;
+			else
+				cin.ignore();
+		}
+	}
+
+
 }

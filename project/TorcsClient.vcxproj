@@ -102,7 +102,7 @@
     <ClInclude Include="$(SolutionDir)middleware\TorcsClient\include\CarState.h" />
     <ClInclude Include="$(SolutionDir)middleware\TorcsClient\include\SimpleParser.h" />
     <ClInclude Include="$(SolutionDir)middleware\TorcsClient\include\WrapperBaseDriver.h" />
-    <ClInclude Include="$(SolutionDir)middleware\TorcsClient\include\Setup.hpp" />
+    <ClInclude Include="..\middleware\TorcsClient\include\Setup.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(SolutionDir)middleware\TorcsClient\source\CarControl.cpp" />

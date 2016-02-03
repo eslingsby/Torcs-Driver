@@ -43,7 +43,7 @@
     <IncludePath>$(SolutionDir)middleware\TorcsClient\include;$(SolutionDir)middleware\FANN-2.2.0\include;$(SolutionDir)middleware\SimpleDriver\include;$(SolutionDir)middleware\ANNDriver\include;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)bin\</OutDir>
     <IntDir>$(SolutionDir)build\$(Configuration)\$(ProjectName)\</IntDir>
-    <TargetName>$(ProjectName)d</TargetName>
+    <TargetName>$(SolutionName)d</TargetName>
     <LibraryPath>$(SolutionDir)bin;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -51,6 +51,7 @@
     <OutDir>$(SolutionDir)bin\</OutDir>
     <IntDir>$(SolutionDir)build\$(Configuration)\$(ProjectName)\</IntDir>
     <LibraryPath>$(SolutionDir)bin;$(LibraryPath)</LibraryPath>
+    <TargetName>$(SolutionName)</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -85,7 +86,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="MainDriver.cpp" />
     <ClCompile Include="Setup.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="MainDriver.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

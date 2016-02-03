@@ -1,8 +1,12 @@
-#include "Setup.hpp"
+#include <Setup.h>
 
 #include <SimpleDriver.h>
-#include <ANNdriver.h>
+#include "MainDriver.hpp"
+
+typedef MainDriver Driver;
 
 BaseDriver* setup(int argc, char *argv[]){
-	return new SimpleDriver;
+	Driver* driver = new Driver;
+
+	return driver;
 }
