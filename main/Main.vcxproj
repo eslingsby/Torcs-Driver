@@ -40,14 +40,14 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>$(SolutionDir)middleware\TorcsClient\include;$(SolutionDir)middleware\FANN-2.2.0\include;$(SolutionDir)middleware\SimpleDriver\include;$(SolutionDir)middleware\ANNDriver\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)middleware\TorcsClient\include;$(SolutionDir)middleware\FANN-2.2.0\include;$(SolutionDir)middleware\SimpleDriver\include;$(SolutionDir)middleware\ANNDriver\include;$(SolutionDir)middleware\glm-0.9.7.2\include;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)bin\</OutDir>
     <IntDir>$(SolutionDir)build\$(Configuration)\$(ProjectName)\</IntDir>
     <TargetName>$(SolutionName)d</TargetName>
     <LibraryPath>$(SolutionDir)bin;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>$(SolutionDir)middleware\TorcsClient\include;$(SolutionDir)middleware\FANN-2.2.0\include;$(SolutionDir)middleware\SimpleDriver\include;$(SolutionDir)middleware\ANNDriver\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)middleware\TorcsClient\include;$(SolutionDir)middleware\FANN-2.2.0\include;$(SolutionDir)middleware\SimpleDriver\include;$(SolutionDir)middleware\ANNDriver\include;$(SolutionDir)middleware\glm-0.9.7.2\include;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)bin\</OutDir>
     <IntDir>$(SolutionDir)build\$(Configuration)\$(ProjectName)\</IntDir>
     <LibraryPath>$(SolutionDir)bin;$(LibraryPath)</LibraryPath>
@@ -86,11 +86,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="MainDriver.cpp" />
+    <ClCompile Include="MyDriver.cpp" />
     <ClCompile Include="Setup.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="MainDriver.hpp" />
+    <ClInclude Include="MyDriver.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
