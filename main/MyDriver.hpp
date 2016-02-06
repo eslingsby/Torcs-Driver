@@ -14,12 +14,20 @@ class MyDriver : public WrapperBaseDriver{
 	Milliseconds _dt = _timeCurrent - _timePrevious;
 	Milliseconds _runtime = Milliseconds::zero();
 
+	float _speedDefault = 60.f;
+	float _speedBoost = 80.f;
+	float _speedBrake = 30.f;
+
 	bool _clutching = false;
-	float _maxSpeed = 40.f;
+
+	int _gearUp = 5000;
+	int _gearDown = 3000;
+
+	float _forwardDivisor = 100.f;
 
 	float getSpeed(CarState& cs);
 	void engageGear(CarControl& cc, int gear = 1);
-	float steer(CarState& cs, CarControl& cc);
+	void steer(CarState& cs, CarControl& cc);
 
 public:
 	MyDriver();

@@ -33,14 +33,14 @@ CarControl MyDriver::wDrive(CarState cs){
 	
 	CarControl cc;
 
-	float slowdown = steer(cs, cc);
+	steer(cs, cc);
 
-	cout << slowdown << endl;
+	float forward = cs.getTrack((TRACK_SENSORS_NUM - 1) / 2) / _forwardDivisor;
 
-	if (getSpeed(cs) < _maxSpeed - slowdown * 60.f){
+	if (getSpeed(cs) < _speedDefault - (forward * _speedBrake) + (forward * _speedBoost)){
 		if (cs.getGear() == 0)
 			engageGear(cc);
-		else if (cs.getRpm() > 5000 && cs.getGear() != 6)
+		else if (cs.getRpm() > _gearUp && cs.getGear() != 6)
 			engageGear(cc, cs.getGear() + 1);
 
 
@@ -48,11 +48,12 @@ CarControl MyDriver::wDrive(CarState cs){
 			cc.setAccel(1.f);
 	}
 	else{
-		cc.setAccel(0.f);
-		//cc.setBrake(slowdown);
-	}
+		if (cs.getRpm() < _gearDown && cs.getGear() != 2)
+			engageGear(cc, cs.getGear() - 1);
 
-	//cout << "Speed : " << getSpeed(cs) << " Delta Time : " << _dt.count() << endl;
+		cc.setAccel(0.f);
+		cc.setBrake(forward);
+	}
 
 	return cc;
 }
@@ -79,19 +80,11 @@ void MyDriver::engageGear(CarControl& cc, int gear){
 	}
 }
 
-float MyDriver::steer(CarState& cs, CarControl& cc){
-	//float left = cs.getTrack(0 + 2);
-	//float right = cs.getTrack(TRACK_SENSORS_NUM - 1 - 2);
-	//float forward = cs.getTrack((TRACK_SENSORS_NUM - 1) / 2);
+void MyDriver::steer(CarState& cs, CarControl& cc){
+	float left = cs.getTrack(0 + 2);
+	float right = cs.getTrack(TRACK_SENSORS_NUM - 1 - 2);
 
-	//cout << "L-" << left << " R-" << right << " F-" << forward << endl;
-
-	float position = cs.getTrackPos();
-
-	float value = position;
-	cc.setSteer(-position);
-
-	return glm::abs(value);	
+	cc.setSteer(left - right);
 }
 
 void MyDriver::onRestart(){
