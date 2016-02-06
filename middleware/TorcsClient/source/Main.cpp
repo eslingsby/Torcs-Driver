@@ -315,10 +315,6 @@ void parse_args(int argc, char *argv[], char *hostName, unsigned int &serverPort
     strcpy(trackName,"unknown");
     stage=BaseDriver::UNKNOWN;
 
-
-	
-
-
     i = 1;
     while (i < argc)
     {
@@ -371,8 +367,8 @@ void parse_args(int argc, char *argv[], char *hostName, unsigned int &serverPort
     	}
     }
 
+	// If serverPort and hostName weren't in the args, prompt the user to enter them
 	if (serverPort == 0 || hostName == ""){
-		// Get user input for IP and port
 		bool input = true;
 
 		while (input){
@@ -411,6 +407,4 @@ void parse_args(int argc, char *argv[], char *hostName, unsigned int &serverPort
 				cin.ignore();
 		}
 	}
-
-
 }
