@@ -5,7 +5,7 @@ MyDriver::MyDriver(){
 }
 
 MyDriver::~MyDriver(){
-
+	
 }
 
 void MyDriver::init(float* angles){
@@ -30,6 +30,8 @@ CarControl MyDriver::wDrive(CarState cs){
 
 	_dt = _timeCurrent - _timePrevious;
 	_runtime += _dt;
+
+	std::cout << _dt.count() << "\n";
 	
 	CarControl cc;
 

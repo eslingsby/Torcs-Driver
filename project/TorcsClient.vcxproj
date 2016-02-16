@@ -44,7 +44,7 @@
     <LibraryPath>$(SolutionDir)bin;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)bin\</OutDir>
     <IntDir>$(SolutionDir)build\$(Configuration)\$(ProjectName)\</IntDir>
-    <TargetName>$(ProjectName)d</TargetName>
+    <TargetName>$(ProjectName)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -68,7 +68,7 @@
       <AdditionalDependencies>WS2_32.lib;fanndoubled.lib;fannfixedd.lib;fannfloatd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Lib>
-      <AdditionalDependencies>WS2_32.lib;fanndoubled.lib;fannfixedd.lib;fannfloatd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>WS2_32.lib;fanndouble.lib;fannfixed.lib;fannfloat.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/ignore:4006,4221</AdditionalOptions>
     </Lib>
   </ItemDefinitionGroup>
@@ -102,14 +102,14 @@
     <ClInclude Include="$(SolutionDir)middleware\TorcsClient\include\CarState.h" />
     <ClInclude Include="$(SolutionDir)middleware\TorcsClient\include\SimpleParser.h" />
     <ClInclude Include="$(SolutionDir)middleware\TorcsClient\include\WrapperBaseDriver.h" />
-    <ClInclude Include="..\middleware\TorcsClient\include\Setup.h" />
+    <ClInclude Include="..\middleware\TorcsClient\include\TorcsClient.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(SolutionDir)middleware\TorcsClient\source\CarControl.cpp" />
     <ClCompile Include="$(SolutionDir)middleware\TorcsClient\source\CarState.cpp" />
-    <ClCompile Include="$(SolutionDir)middleware\TorcsClient\source\Main.cpp" />
     <ClCompile Include="$(SolutionDir)middleware\TorcsClient\source\SimpleParser.cpp" />
     <ClCompile Include="$(SolutionDir)middleware\TorcsClient\source\WrapperBaseDriver.cpp" />
+    <ClCompile Include="..\middleware\TorcsClient\source\TorcsClient.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

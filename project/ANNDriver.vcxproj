@@ -51,7 +51,7 @@
     <IncludePath>$(SolutionDir)middleware\TorcsClient\include;$(SolutionDir)middleware\FANN-2.2.0\include;$(SolutionDir)middleware\SimpleDriver\include;$(SolutionDir)middleware\ANNDriver\include;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)bin\</OutDir>
     <IntDir>$(SolutionDir)build\$(Configuration)\$(ProjectName)\</IntDir>
-    <TargetName>$(ProjectName)d</TargetName>
+    <TargetName>$(ProjectName)</TargetName>
     <LibraryPath>$(SolutionDir)bin;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

@@ -40,14 +40,14 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>$(SolutionDir)middleware\TorcsClient\include;$(SolutionDir)middleware\FANN-2.2.0\include;$(SolutionDir)middleware\SimpleDriver\include;$(SolutionDir)middleware\ANNDriver\include;$(SolutionDir)middleware\glm-0.9.7.2\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)middleware\TorcsClient\include;$(SolutionDir)middleware\FANN-2.2.0\include;$(SolutionDir)middleware\SimpleDriver\include;$(SolutionDir)middleware\ANNDriver\include;$(SolutionDir)middleware\glm-0.9.7.2\include;$(SolutionDir)middleware\SDL2-2.0.4\include;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)bin\</OutDir>
     <IntDir>$(SolutionDir)build\$(Configuration)\$(ProjectName)\</IntDir>
-    <TargetName>$(SolutionName)d</TargetName>
+    <TargetName>$(SolutionName)</TargetName>
     <LibraryPath>$(SolutionDir)bin;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>$(SolutionDir)middleware\TorcsClient\include;$(SolutionDir)middleware\FANN-2.2.0\include;$(SolutionDir)middleware\SimpleDriver\include;$(SolutionDir)middleware\ANNDriver\include;$(SolutionDir)middleware\glm-0.9.7.2\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)middleware\TorcsClient\include;$(SolutionDir)middleware\FANN-2.2.0\include;$(SolutionDir)middleware\SimpleDriver\include;$(SolutionDir)middleware\ANNDriver\include;$(SolutionDir)middleware\glm-0.9.7.2\include;$(SolutionDir)middleware\SDL2-2.0.4\include;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)bin\</OutDir>
     <IntDir>$(SolutionDir)build\$(Configuration)\$(ProjectName)\</IntDir>
     <LibraryPath>$(SolutionDir)bin;$(LibraryPath)</LibraryPath>
@@ -64,7 +64,7 @@
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>ANNDriverd.lib;SimpleDriverd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ANNDriver.lib;SimpleDriver.lib;SDL2.lib;SDL2main.lib;OpenGL32.lib;glu32.lib;TorcsClient.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -82,15 +82,17 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>ANNDriver.lib;SimpleDriver.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ANNDriver.lib;SimpleDriver.lib;SDL2.lib;SDL2main.lib;OpenGL32.lib;glu32.lib;TorcsClient.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Main.cpp" />
     <ClCompile Include="MyDriver.cpp" />
-    <ClCompile Include="Setup.cpp" />
+    <ClCompile Include="Renderer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MyDriver.hpp" />
+    <ClInclude Include="Renderer.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

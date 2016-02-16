@@ -153,7 +153,7 @@ int main(int argc, char *argv[])
 
 	// Setup function
 
-	BaseDriver* d = setup(argc, argv);
+	BaseDriver* d = setup(argc, argv); // CALLED BETWEEN PRE AND POST SETUP
 
 	if (d == nullptr)
 		return 1;
@@ -291,6 +291,7 @@ int main(int argc, char *argv[])
 #ifdef WIN32
     WSACleanup();
 #endif
+
     return 0;
 
 }
