@@ -5,11 +5,14 @@
 #include <string>
 #include <glm\vec2.hpp>
 #include <glm\vec3.hpp>
+#include <glm\vec4.hpp>
 #include <glm\gtc\quaternion.hpp>
+#include <vector>
+#include <mutex>
 
 class Renderer{
 	std::string _title = "SDL";
-	glm::vec2 _size = { 1280, 720 };
+	glm::vec2 _size = { 640, 480 };
 
 	float _draw = 1024.f;
 	float _zoom = 1.f;
@@ -20,7 +23,11 @@ class Renderer{
 	SDL_Window* _window = nullptr;
 	SDL_GLContext _context = 0;
 
+	std::vector<glm::vec4> _lineBuffer;
+
 	bool _running = false;
+
+	std::mutex _mutex;
 
 	void _flip();
 	void _reshape();
@@ -42,6 +49,6 @@ public:
 
 	bool running();
 
-	void drawLine(const glm::vec3& start, const glm::vec3& end);
-	void drawPoint(const glm::vec3& point, float size);
+	void drawLine(const glm::vec2& start, const glm::vec2& end);
+	void drawPoint(const glm::vec2& point);
 };

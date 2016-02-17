@@ -33,6 +33,8 @@ bool Renderer::init(){
 		return false;
 	}
 
+	_reshape();
+
 	_running = true;
 	return true;
 }
@@ -77,8 +79,6 @@ void Renderer::_reshape(){
 	glMultMatrixf(&glm::mat4_cast(rotation)[0][0]);
 
 	glTranslatef(_position.x, _position.y, 0);
-
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 void Renderer::update(){
@@ -91,8 +91,23 @@ void Renderer::update(){
 	}
 
 	_flip();
-
 	_reshape();
+
+	_mutex.lock();
+
+	for (glm::vec4 line : _lineBuffer){
+		glBegin(GL_LINES);
+		
+		glVertex2f(line.x, line.y);
+		
+		glVertex2f(line.z, line.w);
+		
+		glEnd();
+	}
+
+	_lineBuffer.clear();
+
+	_mutex.unlock();
 }
 
 void Renderer::setPosition(const glm::vec2& position){
@@ -123,10 +138,23 @@ bool Renderer::running(){
 	return _running;
 }
 
-void Renderer::drawLine(const glm::vec3& start, const glm::vec3& end){
+void Renderer::drawLine(const glm::vec2& start, const glm::vec2& end){
+	//glBegin(GL_LINES);
+	//
+	//glVertex2f(start.x, start.y);
+	//
+	//glVertex2f(end.x, end.y);
+	//
+	//glEnd();
 
+
+	_mutex.lock();
+
+	_lineBuffer.push_back(glm::vec4(start, end));
+
+	_mutex.unlock();
 }
 
-void Renderer::drawPoint(const glm::vec3& point, float size){
+void Renderer::drawPoint(const glm::vec2& point){
 
 }

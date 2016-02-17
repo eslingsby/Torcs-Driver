@@ -15,20 +15,24 @@
 void race_thread(const std::string& hostname, unsigned int port, BaseDriver* driver);
 
 class TorcsClient{
-	// Host information
-	std::string hostName;
-	unsigned int serverPort;
+	std::string _hostName;
+	unsigned int _serverPort;
 
-	SOCKET socketDescriptor;
-	sockaddr_in serverAddress;
+	SOCKET _socketDescriptor;
+	sockaddr_in _serverAddress;
 
-	char buffer[UDP_MSGLEN];
+	char _buffer[UDP_MSGLEN];
 
-	BaseDriver* driver = nullptr;
+	BaseDriver* _driver = nullptr;
 
-	bool connected = false;
+	bool _connected = false;
 
 public:
+	enum RUN_CODES{
+		RESET = -1,
+		SHUTDOWN = 0,
+		ABORT = 1
+	};
 
 	bool init(const std::string& hostname = "localhost", unsigned int port = 3001);
 

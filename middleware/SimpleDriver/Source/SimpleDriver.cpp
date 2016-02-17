@@ -34,7 +34,7 @@ const float SimpleDriver::stuckAngle = .523598775; //PI/6
 
 /* Accel and Brake Constants*/
 const float SimpleDriver::maxSpeedDist=70;
-const float SimpleDriver::maxSpeed=150;
+const float SimpleDriver::maxSpeed=100;
 const float SimpleDriver::sin5 = 0.08716;
 const float SimpleDriver::cos5 = 0.99619;
 

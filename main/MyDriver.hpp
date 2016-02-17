@@ -25,12 +25,17 @@ class MyDriver : public WrapperBaseDriver{
 
 	float _forwardDivisor = 100.f;
 
+	float _trackOffset = 0.f;
+
+	bool _log;
+
 	float getSpeed(CarState& cs);
 	void engageGear(CarControl& cc, int gear = 1);
 	void steer(CarState& cs, CarControl& cc);
+	float obstacle(CarState& cs);
 
 public:
-	MyDriver();
+	MyDriver(bool log = false);
 	~MyDriver();
 
 	void init(float* angles);

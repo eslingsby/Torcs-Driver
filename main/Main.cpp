@@ -6,17 +6,21 @@
 #include <TorcsClient.hpp>
 
 int main(int argc, char* argv[]){
-	BaseDriver* driver = new SimpleDriver;
+	std::thread thread_0(race_thread, "localhost", 3001, new MyDriver(true));
+	//std::thread thread_1(race_thread, "localhost", 3002, new MyDriver(true));
+	//std::thread thread_2(race_thread, "localhost", 3003, new MyDriver);
+	
+	Renderer::get().init();
 
-	std::thread thread(race_thread, "localhost", 3001, driver);
+	while (Renderer::get().running()){
+		Renderer::get().update();
 
-	//Renderer::get().init();
-	//
-	//while (Renderer::get().running()){ //&& driver is racing
-	//	Renderer::get().update();
-	//}
+		std::this_thread::sleep_for(std::chrono::milliseconds(25));
+	}
 
-	thread.join();
+	thread_0.join();
+	//thread_1.join();
+	//thread_2.join();
 
 	return 0;
 }

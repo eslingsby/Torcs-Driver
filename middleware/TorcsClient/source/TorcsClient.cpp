@@ -5,9 +5,9 @@
 #include <thread>
 
 void race_thread(const std::string& hostname, unsigned int port, BaseDriver* driver){
-	int code = -1;
+	int code = TorcsClient::RESET;
 
-	while (code == -1){
+	while (code == TorcsClient::RESET){
 		TorcsClient client;
 
 		if (!client.init(hostname, port))
@@ -21,13 +21,13 @@ void race_thread(const std::string& hostname, unsigned int port, BaseDriver* dri
 		code = client.run();
 	}
 
-	if (code == 1)
+	if (code == TorcsClient::ABORT)
 		std::cout << "Something went wrong!\n";
 }
 
 bool TorcsClient::init(const std::string& hostname, unsigned int port){
-	this->hostName = hostname;
-	this->serverPort = port;
+	_hostName = hostname;
+	_serverPort = port;
 
 	// WSA Startup
 	WSADATA wsaData = { 0 };
@@ -42,26 +42,26 @@ bool TorcsClient::init(const std::string& hostname, unsigned int port){
 	// Resolve hostname
 	hostent* hostInfo = NULL;
 
-	hostInfo = gethostbyname(hostName.c_str());
+	hostInfo = gethostbyname(_hostName.c_str());
 
 	if (hostInfo == NULL){
-		std::cout << "Error: problem interpreting host: " << hostName.c_str() << "\n";
+		std::cout << "Error: problem interpreting host: " << _hostName.c_str() << "\n";
 		return false;
 	}
 
 	// Create socket
-	socketDescriptor = socket(AF_INET, SOCK_DGRAM, 0);
+	_socketDescriptor = socket(AF_INET, SOCK_DGRAM, 0);
 
-	if (INVALID(socketDescriptor)){
+	if (INVALID(_socketDescriptor)){
 		std::cout << "Cannot create socket!\n";
 		return false;
 	}
 
 	// Bind socket
-	serverAddress.sin_family = hostInfo->h_addrtype;
+	_serverAddress.sin_family = hostInfo->h_addrtype;
 
-	memcpy((char*)&serverAddress.sin_addr.s_addr, hostInfo->h_addr_list[0], hostInfo->h_length);
-	serverAddress.sin_port = htons(serverPort);
+	memcpy((char*)&_serverAddress.sin_addr.s_addr, hostInfo->h_addr_list[0], hostInfo->h_length);
+	_serverAddress.sin_port = htons(_serverPort);
 
 	return true;
 }
@@ -71,44 +71,44 @@ bool TorcsClient::connect(unsigned int attempts){
 	timeval timeVal;
 
 	float angles[19];
-	driver->init(angles);
+	_driver->init(angles);
 
-	string initString = "SCR" + SimpleParser::stringify(string("init"), angles, 19);
+	std::string initString = "SCR" + SimpleParser::stringify("init", angles, 19);
 
 	unsigned int attempt = 0;
 
-	while (!connected){
+	while (!_connected){
 		attempt += 1;
 
-		if (sendto(socketDescriptor, initString.c_str(), initString.length() * sizeof(char), 0, (sockaddr*)&serverAddress, sizeof(serverAddress)) < 0){
+		if (sendto(_socketDescriptor, initString.c_str(), initString.length() * sizeof(char), 0, (sockaddr*)&_serverAddress, sizeof(_serverAddress)) < 0){
 			std::cout << "Cannot send data!\n";
-			CLOSE(socketDescriptor);
+			CLOSE(_socketDescriptor);
 			return false;
 		}
 
 		// wait until answer comes back, for up to UDP_CLIENT_TIMEUOT micro sec
 
 		FD_ZERO(&readSet);
-		FD_SET(socketDescriptor, &readSet);
+		FD_SET(_socketDescriptor, &readSet);
 
 		timeVal.tv_sec = 0;
 		timeVal.tv_usec = UDP_CLIENT_TIMEUOT;
 
-		if (select(socketDescriptor + 1, &readSet, NULL, NULL, &timeVal)){
+		if (select(_socketDescriptor + 1, &readSet, NULL, NULL, &timeVal)){
 			// Read data sent by the solorace server
 
-			memset(buffer, 0x0, UDP_MSGLEN);  // Zero out the buffer.
+			memset(_buffer, 0x0, UDP_MSGLEN);  // Zero out the buffer.
 
-			int numRead = recv(socketDescriptor, buffer, UDP_MSGLEN, 0);
+			int numRead = recv(_socketDescriptor, _buffer, UDP_MSGLEN, 0);
 
 			if (numRead < 0){
 				std::cout << "Attempting connection!\n";
 			}
 			else{
-				std::cout << "Received: " << buffer << "\n";
+				std::cout << "Received: " << _buffer << "\n";
 
-				if (strcmp(buffer, "***identified***") == 0)
-					connected = true;
+				if (strcmp(_buffer, "***identified***") == 0)
+					_connected = true;
 			}
 		}
 
@@ -124,11 +124,11 @@ bool TorcsClient::connect(unsigned int attempts){
 }
 
 void TorcsClient::setDriver(BaseDriver* driver){
-	this->driver = driver;
+	_driver = driver;
 }
 
 int TorcsClient::run(){
-	if (driver == nullptr)
+	if (_driver == nullptr)
 		return 1;
 
 	fd_set readSet;
@@ -139,39 +139,39 @@ int TorcsClient::run(){
 
 	bool reset = false;
 
-	while (connected){
+	while (_connected){
 		FD_ZERO(&readSet);
-		FD_SET(socketDescriptor, &readSet);
+		FD_SET(_socketDescriptor, &readSet);
 
 		timeVal.tv_sec = 0;
 		timeVal.tv_usec = UDP_CLIENT_TIMEUOT;
 
-		if (select(socketDescriptor + 1, &readSet, NULL, NULL, &timeVal)){
+		if (select(_socketDescriptor + 1, &readSet, NULL, NULL, &timeVal)){
 			if (curTimeout != maxTimeout)
 				curTimeout = maxTimeout;
 
 			// Read data sent by the solorace server
-			memset(buffer, 0x0, UDP_MSGLEN);  // Zero out the buffer.
+			memset(_buffer, 0x0, UDP_MSGLEN);  // Zero out the buffer.
 
-			int numRead = recv(socketDescriptor, buffer, UDP_MSGLEN, 0);
+			int numRead = recv(_socketDescriptor, _buffer, UDP_MSGLEN, 0);
 
 			if (numRead < 0){
 				std::cout << "No response from server!";
-				CLOSE(socketDescriptor);
+				CLOSE(_socketDescriptor);
 				return 1;
 			}
 
 			// Check for server messages
-			if (strcmp(buffer, "***shutdown***") == 0){
-				driver->onShutdown();
+			if (strcmp(_buffer, "***shutdown***") == 0){
+				_driver->onShutdown();
 				std::cout << "Client shutdown!\n";
 
 				reset = true;
 				break;
 			}
 
-			if (strcmp(buffer, "***restart***") == 0){
-				driver->onRestart();
+			if (strcmp(_buffer, "***restart***") == 0){
+				_driver->onRestart();
 				std::cout << "Client restart!\n";
 
 				reset = true;
@@ -179,14 +179,14 @@ int TorcsClient::run(){
 			}
 
 			// Give state to driver
-			std::string action = driver->drive(std::string(buffer));
-			memset(buffer, 0x0, UDP_MSGLEN);
-			sprintf_s(buffer, "%s", action.c_str());
+			std::string action = _driver->drive(std::string(_buffer));
+			memset(_buffer, 0x0, UDP_MSGLEN);
+			sprintf_s(_buffer, "%s", action.c_str());
 
 			// Send return from driver to server
-			if (sendto(socketDescriptor, buffer, strlen(buffer) + 1, 0, (sockaddr*)&serverAddress, sizeof(serverAddress)) < 0){
+			if (sendto(_socketDescriptor, _buffer, strlen(_buffer) + 1, 0, (sockaddr*)&_serverAddress, sizeof(_serverAddress)) < 0){
 				std::cout << "Cannot send data!\n";
-				CLOSE(socketDescriptor);
+				CLOSE(_socketDescriptor);
 				return 1;
 			}
 		}
@@ -200,7 +200,7 @@ int TorcsClient::run(){
 		}
 	}
 
-	CLOSE(socketDescriptor);
+	CLOSE(_socketDescriptor);
 
 	WSACleanup();
 
