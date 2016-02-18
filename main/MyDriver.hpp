@@ -3,6 +3,7 @@
 #include <WrapperBaseDriver.h>
 #include <chrono>
 #include <glm\glm.hpp>
+#include <vector>
 
 class MyDriver : public WrapperBaseDriver{
 	typedef chrono::high_resolution_clock Clock;
@@ -28,6 +29,10 @@ class MyDriver : public WrapperBaseDriver{
 	float _trackOffset = 0.f;
 
 	bool _log;
+
+	float _turningAngle = 0.f;
+	std::vector<float> _turningAngleHistory;
+	unsigned int _turningAngleN = 128;
 
 	float getSpeed(CarState& cs);
 	void engageGear(CarControl& cc, int gear = 1);

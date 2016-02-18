@@ -7,7 +7,8 @@
 
 int main(int argc, char* argv[]){
 	std::thread thread_0(race_thread, "localhost", 3001, new MyDriver(true));
-	//std::thread thread_1(race_thread, "localhost", 3002, new MyDriver(true));
+
+	//std::thread thread_1(race_thread, "localhost", 3002, new MyDriver);
 	//std::thread thread_2(race_thread, "localhost", 3003, new MyDriver);
 	
 	Renderer::get().init();
@@ -19,6 +20,7 @@ int main(int argc, char* argv[]){
 	}
 
 	thread_0.join();
+
 	//thread_1.join();
 	//thread_2.join();
 

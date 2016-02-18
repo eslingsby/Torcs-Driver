@@ -8,7 +8,9 @@
 #include <glm\vec4.hpp>
 #include <glm\gtc\quaternion.hpp>
 #include <vector>
+#include <array>
 #include <mutex>
+#include <set>
 
 class Renderer{
 	std::string _title = "SDL";
@@ -23,7 +25,50 @@ class Renderer{
 	SDL_Window* _window = nullptr;
 	SDL_GLContext _context = 0;
 
-	std::vector<glm::vec4> _lineBuffer;
+	struct Line{
+		const glm::vec2 start;
+		const glm::vec2 end;
+		const glm::vec3 colour;
+
+		Line(const glm::vec2& start, const glm::vec2& end, const glm::vec3& colour) :
+			start(start),
+			end(end),
+			colour(colour){
+		}
+	};
+
+	struct Point{
+		const glm::vec2 point;
+		const float size;
+		const glm::vec3 colour;
+
+		Point(const glm::vec2& point, float size, const glm::vec3& colour) :
+			point(point),
+			size(size),
+			colour(colour){
+		}
+	};
+
+	struct Graph{
+		bool active = false;
+
+		float xLength = 1000.f;
+		float xOffset = 0.f;
+
+		float yMin = -1.f;
+		float yMax = 1.f;
+
+		std::vector<const glm::vec2> points;
+	};
+
+	//typedef std::array<float, 7> Line;
+	//typedef std::array<float, 5> Point;
+
+	std::vector<Line> _lineBuffer;
+	std::vector<Point> _pointBuffer;
+
+	std::array<Graph, 8> _graphs;
+
 
 	bool _running = false;
 
@@ -49,6 +94,10 @@ public:
 
 	bool running();
 
-	void drawLine(const glm::vec2& start, const glm::vec2& end);
-	void drawPoint(const glm::vec2& point);
+	void drawLine(const glm::vec2& start, const glm::vec2& end, const glm::vec3& colour = { 1.f, 1.f, 1.f });
+	void drawPoint(const glm::vec2& point, const glm::vec3& colour = { 1.f, 1.f, 1.f });
+
+	void setGraph(unsigned int layer, float xLength, float yMin, float yMax);
+
+	void drawGraph(const glm::vec2& point, unsigned int layer);
 };

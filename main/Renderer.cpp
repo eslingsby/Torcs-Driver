@@ -1,6 +1,8 @@
 #include "Renderer.hpp"
 
 #include <glm\mat4x4.hpp>
+#include <array>
+#include "Utils.hpp"
 
 bool Renderer::init(){
 	close();
@@ -95,18 +97,118 @@ void Renderer::update(){
 
 	_mutex.lock();
 
-	for (glm::vec4 line : _lineBuffer){
+	// Set window title
+	SDL_SetWindowTitle(_window, _title.c_str());
+	
+	// Draw track sensors
+	for (Line line : _lineBuffer){
 		glBegin(GL_LINES);
-		
-		glVertex2f(line.x, line.y);
-		
-		glVertex2f(line.z, line.w);
+
+		glColor3fv(&line.colour[0]);
+
+		glVertex2fv(&line.start[0]);
+		glVertex2fv(&line.end[0]);
 		
 		glEnd();
 	}
 
 	_lineBuffer.clear();
+	
+	// Draw opponent sensors
+	for (Point point : _pointBuffer){
+		glPointSize(point.size);
 
+		glBegin(GL_POINTS);
+
+		glColor3fv(&point.colour[0]);
+
+		glVertex2fv(&point.point[0]);
+
+		glEnd();
+	}
+
+	_pointBuffer.clear();
+
+	// Draw graph layers
+
+
+	glm::vec2 corner = { -_size.x / 2.f, -_size.y / 2.f };
+	glm::vec2 padding = { 16.f, 16.f };
+
+	float height = 128.f;
+
+	glm::vec2 start = corner + padding + glm::vec2(0, height / 2.f);
+	glm::vec2 end = start + glm::vec2(_size.x - padding.x * 2.f, 0.f);
+
+	glm::vec2 top = corner + padding;
+	glm::vec2 bottom = top + glm::vec2(0, height);
+
+
+	glColor3f(1.f, 1.f, 1.f);
+
+	glBegin(GL_LINES);
+	
+	glVertex2fv(&top[0]);
+
+	glVertex2fv(&bottom[0]);
+
+
+	glVertex2fv(&start[0]);
+
+	glVertex2fv(&end[0]);
+
+	glEnd();
+
+
+
+
+	const glm::vec3 colours[8] = {
+		{ 1.f, 1.f, 1.f },//111
+		{ 0.f, 0.f, 0.f },//000
+		{ 1.f, 0.f, 0.f },//100
+		{ 0.f, 1.f, 0.f },//010
+		{ 0.f, 0.f, 1.f },//001
+		{ 1.f, 1.f, 0.f },//110
+		{ 1.f, 0.f, 1.f },//101
+		{ 0.f, 1.f, 1.f } //011
+	};
+
+	for (unsigned int i = 0; i < 8; i++){
+		if (!_graphs[i].active)
+			continue;
+
+		if (!_graphs[i].points.size())
+			continue;
+
+
+		glm::vec2 last = *(_graphs[i].points.end() - 1);
+
+		if ((_graphs[i].points.end() - 1)->x > _graphs[i].xLength + _graphs[i].xOffset){
+			_graphs[i].xOffset += last.x - _graphs[i].xOffset;
+
+			_graphs[i].points.clear();
+			_graphs[i].points.push_back(last);
+		}
+
+
+		for (glm::vec2 point : _graphs[i].points){
+			float x = changeRange(0, _graphs[i].xLength, start.x, end.x, point.x - _graphs[i].xOffset);
+			float y = changeRange(_graphs[i].yMin, _graphs[i].yMax, top.y, bottom.y, point.y);
+
+			glPointSize(2.5f);
+			glColor3fv(&colours[i][0]);
+
+			glBegin(GL_POINTS);
+
+			glVertex2f(x, y);
+
+			glEnd();
+		}
+
+		colours[i];
+	}
+
+	
 	_mutex.unlock();
 }
 
@@ -124,7 +226,6 @@ void Renderer::setZoom(float zoom){
 
 void Renderer::setWindowTitle(const std::string& title){
 	_title = title;
-	SDL_SetWindowTitle(_window, title.c_str());
 }
 
 void Renderer::setWindowSize(const glm::vec2& size){
@@ -138,23 +239,47 @@ bool Renderer::running(){
 	return _running;
 }
 
-void Renderer::drawLine(const glm::vec2& start, const glm::vec2& end){
-	//glBegin(GL_LINES);
-	//
-	//glVertex2f(start.x, start.y);
-	//
-	//glVertex2f(end.x, end.y);
-	//
-	//glEnd();
-
-
+void Renderer::drawLine(const glm::vec2& start, const glm::vec2& end, const glm::vec3& colour){
 	_mutex.lock();
 
-	_lineBuffer.push_back(glm::vec4(start, end));
+	_lineBuffer.push_back(Line(start, end, colour));
 
 	_mutex.unlock();
 }
 
-void Renderer::drawPoint(const glm::vec2& point){
+void Renderer::drawPoint(const glm::vec2& point, const glm::vec3& colour){
+	_mutex.lock();
 
+	_pointBuffer.push_back(Point(point, 5.f, colour));
+
+	_mutex.unlock();
+}
+
+
+void Renderer::setGraph(unsigned int layer, float xLength, float yMin, float yMax){
+	_mutex.lock();
+
+	if (layer >= 8)
+		return;
+
+	_graphs[layer].points.clear();
+
+	_graphs[layer].active = true;
+
+	_graphs[layer].xLength = xLength;
+	_graphs[layer].yMin = yMin;
+	_graphs[layer].yMax = yMax;
+
+	_mutex.unlock();
+}
+
+void Renderer::drawGraph(const glm::vec2& point, unsigned int layer){
+	_mutex.lock();
+
+	if (layer >= 8)
+		return;
+
+	_graphs[layer].points.push_back(point);
+
+	_mutex.unlock();
 }
