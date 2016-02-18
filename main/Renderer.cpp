@@ -83,6 +83,137 @@ void Renderer::_reshape(){
 	glTranslatef(_position.x, _position.y, 0);
 }
 
+
+void Renderer::_drawLines(){
+	glm::vec2 offset = { 0.f, -128.f };
+
+	// Draw track sensors
+	for (Line line : _lineBuffer){
+		glBegin(GL_LINES);
+
+		glColor3fv(&line.colour[0]);
+
+		glVertex2fv(&(line.start + offset)[0]);
+		glVertex2fv(&(line.end + offset)[0]);
+
+		glEnd();
+	}
+
+	_lineBuffer.clear();
+}
+
+void Renderer::_drawPoints(){
+	glm::vec2 offset = { 0.f, -128.f };
+
+	// Draw opponent sensors
+	for (Point point : _pointBuffer){
+		glPointSize(point.size);
+
+		glBegin(GL_POINTS);
+
+		glColor3fv(&point.colour[0]);
+
+		glVertex2fv(&(point.point + offset)[0]);
+
+		glEnd();
+	}
+
+	_pointBuffer.clear();
+}
+
+void Renderer::_drawGraphs(){
+	glm::vec2 corner = { -_size.x / 2.f, _size.y / 2.f };
+	glm::vec2 padding = { 16.f, -16.f };
+
+	float height = 128.f;
+
+	glm::vec2 start = corner + padding + glm::vec2(0, -height / 2.f);
+	glm::vec2 end = start + glm::vec2(_size.x - padding.x * 2.f, 0.f);
+
+	glm::vec2 top = corner + padding;
+	glm::vec2 bottom = top + glm::vec2(0, -height);
+
+
+	glColor3f(0.75f, 0.75f, 0.75f);
+
+	glBegin(GL_LINES);
+
+	glVertex2fv(&top[0]);
+	glVertex2fv(&bottom[0]);
+
+	glVertex2fv(&start[0]);
+	glVertex2fv(&end[0]);
+
+	glVertex2f(end.x, top.y);
+	glVertex2f(end.x, bottom.y);
+
+	glEnd();
+
+	for (unsigned int i = 0; i < 8; i++){
+		if (!_graphs[i].active)
+			continue;
+
+		if (!_graphs[i].points.size())
+			continue;
+
+
+
+		// Stepping
+		if (!_graphs[i].scrolling){
+			glm::vec2 last = *(_graphs[i].points.end() - 1);
+			
+			if (last.x > _graphs[i].xLength + _graphs[i].xOffset){
+				_graphs[i].xOffset += last.x - _graphs[i].xOffset;
+			
+				_graphs[i].points.clear();
+				_graphs[i].points.push_back(last);
+			}
+		}
+		
+		// Scrolling
+		else if (_graphs[i].scrolling){
+			if (_graphs[i].points.size() < 2)
+				continue;
+
+			glm::vec2 last = *(_graphs[i].points.end() - 1);
+			glm::vec2 prev = *(_graphs[i].points.end() - 2);
+
+			float lastX = changeRange(0, _graphs[i].xLength, start.x, end.x, last.x - _graphs[i].xOffset);
+
+			while (lastX > end.x){
+				_graphs[i].xOffset += last.x - prev.x;
+
+				lastX = changeRange(0, _graphs[i].xLength, start.x, end.x, last.x - _graphs[i].xOffset);
+			}
+
+			glm::vec2 first = *(_graphs[i].points.begin());
+
+			float firstX = changeRange(0, _graphs[i].xLength, start.x, end.x, first.x - _graphs[i].xOffset);
+
+			while (firstX < start.x){
+				_graphs[i].points.erase(_graphs[i].points.begin());
+
+				first = *(_graphs[i].points.begin());
+				firstX = changeRange(0, _graphs[i].xLength, start.x, end.x, first.x - _graphs[i].xOffset);
+			}
+		}
+
+
+		glColor3fv(&_layerColours[i][0]);
+
+		glBegin(GL_LINE_STRIP);
+
+		for (glm::vec2 point : _graphs[i].points){
+			float x = changeRange(0, _graphs[i].xLength, start.x, end.x, point.x - _graphs[i].xOffset);
+			float y = changeRange(_graphs[i].yMin, _graphs[i].yMax, top.y, bottom.y, point.y);
+
+			glVertex2f(x, y);
+		}
+
+		glEnd();
+	}
+}
+
 void Renderer::update(){
 	SDL_Event event;
 	while (SDL_PollEvent(&event)){
@@ -97,117 +228,12 @@ void Renderer::update(){
 
 	_mutex.lock();
 
-	// Set window title
 	SDL_SetWindowTitle(_window, _title.c_str());
 	
-	// Draw track sensors
-	for (Line line : _lineBuffer){
-		glBegin(GL_LINES);
+	_drawLines();
+	_drawPoints();
 
-		glColor3fv(&line.colour[0]);
-
-		glVertex2fv(&line.start[0]);
-		glVertex2fv(&line.end[0]);
-		
-		glEnd();
-	}
-
-	_lineBuffer.clear();
-	
-	// Draw opponent sensors
-	for (Point point : _pointBuffer){
-		glPointSize(point.size);
-
-		glBegin(GL_POINTS);
-
-		glColor3fv(&point.colour[0]);
-
-		glVertex2fv(&point.point[0]);
-
-		glEnd();
-	}
-
-	_pointBuffer.clear();
-
-	// Draw graph layers
-
-
-	glm::vec2 corner = { -_size.x / 2.f, -_size.y / 2.f };
-	glm::vec2 padding = { 16.f, 16.f };
-
-	float height = 128.f;
-
-	glm::vec2 start = corner + padding + glm::vec2(0, height / 2.f);
-	glm::vec2 end = start + glm::vec2(_size.x - padding.x * 2.f, 0.f);
-
-	glm::vec2 top = corner + padding;
-	glm::vec2 bottom = top + glm::vec2(0, height);
-
-
-	glColor3f(1.f, 1.f, 1.f);
-
-	glBegin(GL_LINES);
-	
-	glVertex2fv(&top[0]);
-
-	glVertex2fv(&bottom[0]);
-
-
-	glVertex2fv(&start[0]);
-
-	glVertex2fv(&end[0]);
-
-	glEnd();
-
-
-
-
-	const glm::vec3 colours[8] = {
-		{ 1.f, 1.f, 1.f },//111
-		{ 0.f, 0.f, 0.f },//000
-		{ 1.f, 0.f, 0.f },//100
-		{ 0.f, 1.f, 0.f },//010
-		{ 0.f, 0.f, 1.f },//001
-		{ 1.f, 1.f, 0.f },//110
-		{ 1.f, 0.f, 1.f },//101
-		{ 0.f, 1.f, 1.f } //011
-	};
-
-	for (unsigned int i = 0; i < 8; i++){
-		if (!_graphs[i].active)
-			continue;
-
-		if (!_graphs[i].points.size())
-			continue;
-
-
-		glm::vec2 last = *(_graphs[i].points.end() - 1);
-
-		if ((_graphs[i].points.end() - 1)->x > _graphs[i].xLength + _graphs[i].xOffset){
-			_graphs[i].xOffset += last.x - _graphs[i].xOffset;
-
-			_graphs[i].points.clear();
-			_graphs[i].points.push_back(last);
-		}
-
-
-		for (glm::vec2 point : _graphs[i].points){
-			float x = changeRange(0, _graphs[i].xLength, start.x, end.x, point.x - _graphs[i].xOffset);
-			float y = changeRange(_graphs[i].yMin, _graphs[i].yMax, top.y, bottom.y, point.y);
-
-			glPointSize(2.5f);
-			glColor3fv(&colours[i][0]);
-
-			glBegin(GL_POINTS);
-
-			glVertex2f(x, y);
-
-			glEnd();
-		}
-
-		colours[i];
-	}
-
+	_drawGraphs();
 	
 	_mutex.unlock();
 }
@@ -256,7 +282,7 @@ void Renderer::drawPoint(const glm::vec2& point, const glm::vec3& colour){
 }
 
 
-void Renderer::setGraph(unsigned int layer, float xLength, float yMin, float yMax){
+void Renderer::setGraph(unsigned int layer, float xLength, float yMin, float yMax, bool scrolling){
 	_mutex.lock();
 
 	if (layer >= 8)
@@ -269,6 +295,8 @@ void Renderer::setGraph(unsigned int layer, float xLength, float yMin, float yMa
 	_graphs[layer].xLength = xLength;
 	_graphs[layer].yMin = yMin;
 	_graphs[layer].yMax = yMax;
+
+	_graphs[layer].scrolling = scrolling;
 
 	_mutex.unlock();
 }

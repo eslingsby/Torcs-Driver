@@ -6,6 +6,10 @@
 #include <algorithm>
 #include "Utils.hpp"
 
+// ###### ########################### ######
+// ###### All temporary testing code! ######
+// ###### ########################### ######
+
 MyDriver::MyDriver(bool log){
 	_log = log;
 }
@@ -22,8 +26,9 @@ void MyDriver::init(float* angles){
 	}
 
 	if (_log){
-		Renderer::get().setGraph(0, 100.f, 0, 6.f);
-		Renderer::get().setGraph(1, 100.f, 0.f, 200.f);
+		Renderer::get().setGraph(0, 100.f, 0, 6.f, true);
+		Renderer::get().setGraph(1, 100.f, 0.f, 200.f, true);
+		Renderer::get().setGraph(2, 100.f, -90.f, 90.f, true);
 	}
 	//	Renderer::get().init();
 
@@ -58,12 +63,12 @@ float MyDriver::obstacle(CarState& cs){
 		float angle = glm::radians(changeRange(0, 35, 360, 0, i)) - glm::radians(90.f);
 
 
-		glm::vec3 colour = { 1.f, 1.f, 1.f };
+		glm::vec3 colour = { 0.75f, 0.75f, 0.75f };
 
 		float dist = 35.f;
 
 		if (car[i] < dist)
-			colour = { 1.f, car[i] / dist, car[i] / dist };
+			colour = { colour.r, car[i] / (dist / colour.g), car[i] / (dist / colour.b) };
 
 
 
@@ -142,7 +147,7 @@ float MyDriver::obstacle(CarState& cs){
 
 		Renderer::get().drawPoint(
 			{ car[i] * glm::cos(angle) * size + offset.x, car[i] * glm::sin(angle) * size + offset.y },
-			{ 1.f - car[i] / dist, 0.f, 0.f }
+			colour
 		);
 	}
 
@@ -156,11 +161,11 @@ CarControl MyDriver::wDrive(CarState cs){
 	_dt = _timeCurrent - _timePrevious;
 	_runtime += _dt;
 
-	//std::cout << _dt.count() << "\n";
 
 	if (_log){
-		//Renderer::get().drawGraph({ float(_runtime.count() / 1000.0), cs.getGear() }, 0);
-		Renderer::get().drawGraph({ float(_runtime.count() / 1000.0), cs.getSpeedX() }, 1);
+		Renderer::get().drawGraph({ float(_runtime.count() / 100.0), cs.getGear() }, 0);
+		Renderer::get().drawGraph({ float(_runtime.count() / 100.0), cs.getSpeedX() }, 1);
+		Renderer::get().drawGraph({ float(_runtime.count() / 100.0), glm::degrees(cs.getAngle()) }, 2);
 	}
 	
 	CarControl cc;

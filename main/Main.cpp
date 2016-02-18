@@ -11,6 +11,8 @@ int main(int argc, char* argv[]){
 	//std::thread thread_1(race_thread, "localhost", 3002, new MyDriver);
 	//std::thread thread_2(race_thread, "localhost", 3003, new MyDriver);
 	
+
+	Renderer::get().setWindowSize({ 640, 640 });
 	Renderer::get().init();
 
 	while (Renderer::get().running()){
