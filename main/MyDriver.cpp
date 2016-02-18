@@ -12,6 +12,13 @@
 
 MyDriver::MyDriver(bool log){
 	_log = log;
+
+	_speedDefault = 60.f;
+	_speedBoost = 150.f;
+
+	_speedBrake = 90.f;
+
+	_forwardDivisor = 100.f;
 }
 
 MyDriver::~MyDriver(){
@@ -26,9 +33,15 @@ void MyDriver::init(float* angles){
 	}
 
 	if (_log){
-		Renderer::get().setGraph(0, 100.f, 0, 6.f, true);
-		Renderer::get().setGraph(1, 100.f, 0.f, 200.f, true);
-		Renderer::get().setGraph(2, 100.f, -90.f, 90.f, true);
+		Renderer::get().setGraph(0, 100.f, -1.f, 1.f);
+		Renderer::get().setGraph(1, 100.f, -1.f, 1.f);
+		Renderer::get().setGraph(2, 100.f, -1.f, 1.f);
+
+		//Renderer::get().setGraph(0, 100.f, 0, 6.f, true);
+		//Renderer::get().setGraph(1, 100.f, 0.f, 200.f, true);
+		//Renderer::get().setGraph(2, 100.f, -90.f, 90.f, true);
+		//Renderer::get().setGraph(3, 100.f, 0.f, 6000.f, true);
+		//Renderer::get().setGraph(4, 100.f, 11.f, 1.f, true);
 	}
 	//	Renderer::get().init();
 
@@ -55,8 +68,8 @@ float MyDriver::obstacle(CarState& cs){
 		car[i] = cs.getOpponents(i);
 	}
 
-	float size = 4.f;
-	glm::vec2 offset = { 0.f, -128.f };
+	float size = 3.f;
+	glm::vec2 offset = { 0.f, -256.f };
 
 	for (int i = 0; i < 36; i++){
 
@@ -94,43 +107,69 @@ float MyDriver::obstacle(CarState& cs){
 			colour = { 0.f, 1.f, 0.f };
 
 
-			float proportional = changeRange(0.f, 320.f, 0, 360.f, ((maxIndex + 36 / 2) % 36) * 100.f);
+			// P
 
+
+			//float proportional = (((maxIndex + 36 / 2) % 36) * 10.f) + 5.f;
+
+			float proportional = (maxIndex * 10.f) + 5.f;
+
+			proportional = -changeRange(5.f, 355.f, -1.f, 1.f, proportional);
 			
 
-			//float integral = 0.f;
-			//
-			//for (float i : _turningAngleHistory)
-			//	integral += i;
-			//
-			//
-			//
-			//
-			//float derivative = 0.f;
-			//
-			//int end = _turningAngleHistory.size() - 1;
-			//
-			//if (end > 0)
-			//	derivative = _turningAngleHistory[end - 1] - _turningAngleHistory[end];
+			// I
+			float integral = 0.f;
+			
+			for (float i : _turningAngleHistory)
+				integral += i;
+			
 
 
-			float x = float(_runtime.count() / 100.0);
+			// D
+			float derivative = 0.f;
+			
+			unsigned int gap = 4;
+			
+			if (_turningAngleHistory.size() >= gap)
+				derivative = _turningAngleHistory[_turningAngleHistory.size() - 1] - _turningAngleHistory[_turningAngleHistory.size() - (gap - 1)];
+			
 
-			//Renderer::get().drawGraph({ x, glm::sin(glm::radians(x * 10.f)) }, 0);
+
+			
+			//Renderer::get().drawGraph({ _runtime.count() / 100.f, integral }, 1);
+			//Renderer::get().drawGraph({ _runtime.count() / 100.f, derivative }, 2);
+
+
+			// P + I + D
+			//_turningAngle = proportional + integral / 50.f;
+
+			if (_turningAngleHistory.size() > 2){
+
+				float tolerance = 0.075f;
+
+				float newAngle = proportional + integral / 100.f;
+
+				if (glm::abs(_turningAngleHistory[_turningAngleHistory.size() - 1] - newAngle) < tolerance)
+					_turningAngle = _turningAngleHistory[_turningAngleHistory.size() - 1];
+				else
+					_turningAngle = newAngle;
+			}
 
 
 
-			_turningAngle = proportional;
+
+			Renderer::get().drawGraph({ _runtime.count() / 100.f, _turningAngle }, 0);
+
+			//std::cout << "P : " << proportional << " - " << "I : " << integral << " - " << "D : " << derivative << "\n";
 
 
+
+
+			// Logging
 			_turningAngleHistory.push_back(_turningAngle);
 
 			if (_turningAngleHistory.size() > _turningAngleN)
 				_turningAngleHistory.erase(_turningAngleHistory.begin());
-					
-
-
-			//std::cout << _turningAngle << "\n";
 		}
 
 		
@@ -163,9 +202,11 @@ CarControl MyDriver::wDrive(CarState cs){
 
 
 	if (_log){
-		Renderer::get().drawGraph({ float(_runtime.count() / 100.0), cs.getGear() }, 0);
-		Renderer::get().drawGraph({ float(_runtime.count() / 100.0), cs.getSpeedX() }, 1);
-		Renderer::get().drawGraph({ float(_runtime.count() / 100.0), glm::degrees(cs.getAngle()) }, 2);
+		//Renderer::get().drawGraph({ float(_runtime.count() / 100.0), cs.getGear() }, 0);
+		//Renderer::get().drawGraph({ float(_runtime.count() / 100.0), cs.getSpeedX() }, 1);
+		//Renderer::get().drawGraph({ float(_runtime.count() / 100.0), glm::degrees(cs.getAngle()) }, 2);
+		//Renderer::get().drawGraph({ float(_runtime.count() / 100.0), cs.getRpm() }, 3);
+		//Renderer::get().drawGraph({ float(_runtime.count() / 100.0), cs.getRacePos() }, 4);
 	}
 	
 	CarControl cc;
@@ -316,9 +357,9 @@ void MyDriver::steer(CarState& cs, CarControl& cc){
 
 	//std::cout << avoid << "\n";
 
-	//cc.setSteer(changeRange(0, 360, -1, 1, _turningAngle));
+	cc.setSteer(_turningAngle);
 
-	cc.setSteer(steer);
+	//cc.setSteer(steer);
 }
 
 void MyDriver::onRestart(){

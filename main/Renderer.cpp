@@ -85,16 +85,14 @@ void Renderer::_reshape(){
 
 
 void Renderer::_drawLines(){
-	glm::vec2 offset = { 0.f, -128.f };
-
 	// Draw track sensors
 	for (Line line : _lineBuffer){
 		glBegin(GL_LINES);
 
 		glColor3fv(&line.colour[0]);
 
-		glVertex2fv(&(line.start + offset)[0]);
-		glVertex2fv(&(line.end + offset)[0]);
+		glVertex2fv(&(line.start)[0]);
+		glVertex2fv(&(line.end)[0]);
 
 		glEnd();
 	}
@@ -103,8 +101,6 @@ void Renderer::_drawLines(){
 }
 
 void Renderer::_drawPoints(){
-	glm::vec2 offset = { 0.f, -128.f };
-
 	// Draw opponent sensors
 	for (Point point : _pointBuffer){
 		glPointSize(point.size);
@@ -113,7 +109,7 @@ void Renderer::_drawPoints(){
 
 		glColor3fv(&point.colour[0]);
 
-		glVertex2fv(&(point.point + offset)[0]);
+		glVertex2fv(&(point.point)[0]);
 
 		glEnd();
 	}
@@ -125,26 +121,26 @@ void Renderer::_drawGraphs(){
 	glm::vec2 corner = { -_size.x / 2.f, _size.y / 2.f };
 	glm::vec2 padding = { 16.f, -16.f };
 
-	float height = 128.f;
+	float height = 64.f;
 
 	glm::vec2 start = corner + padding + glm::vec2(0, -height / 2.f);
 	glm::vec2 end = start + glm::vec2(_size.x - padding.x * 2.f, 0.f);
 
-	glm::vec2 top = corner + padding;
-	glm::vec2 bottom = top + glm::vec2(0, -height);
+	glm::vec2 bottom = corner + padding;
+	glm::vec2 top = bottom + glm::vec2(0, -height);
 
-
+	// Drawing graph axes
 	glColor3f(0.75f, 0.75f, 0.75f);
 
 	glBegin(GL_LINES);
 
-	glVertex2fv(&top[0]);
+	glVertex2fv(&(top - glm::vec2(0.f, 1.f))[0]);
 	glVertex2fv(&bottom[0]);
-
+	
 	glVertex2fv(&start[0]);
 	glVertex2fv(&end[0]);
 
-	glVertex2f(end.x, top.y);
+	glVertex2f(end.x, top.y - 1.f);
 	glVertex2f(end.x, bottom.y);
 
 	glEnd();
@@ -156,9 +152,7 @@ void Renderer::_drawGraphs(){
 		if (!_graphs[i].points.size())
 			continue;
 
-
-
-		// Stepping
+		// Changing offset stepping layers
 		if (!_graphs[i].scrolling){
 			glm::vec2 last = *(_graphs[i].points.end() - 1);
 			
@@ -170,7 +164,7 @@ void Renderer::_drawGraphs(){
 			}
 		}
 		
-		// Scrolling
+		// Changing offset for scrolling layers
 		else if (_graphs[i].scrolling){
 			if (_graphs[i].points.size() < 2)
 				continue;
@@ -198,7 +192,7 @@ void Renderer::_drawGraphs(){
 			}
 		}
 
-
+		// Drawing lines
 		glColor3fv(&_layerColours[i][0]);
 
 		glBegin(GL_LINE_STRIP);
