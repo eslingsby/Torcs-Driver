@@ -262,7 +262,8 @@ bool Renderer::running(){
 void Renderer::drawLine(const glm::vec2& start, const glm::vec2& end, const glm::vec3& colour){
 	_mutex.lock();
 
-	_lineBuffer.push_back(Line(start, end, colour));
+	//if (_running)
+		_lineBuffer.push_back(Line(start, end, colour));
 
 	_mutex.unlock();
 }
@@ -270,7 +271,8 @@ void Renderer::drawLine(const glm::vec2& start, const glm::vec2& end, const glm:
 void Renderer::drawPoint(const glm::vec2& point, const glm::vec3& colour){
 	_mutex.lock();
 
-	_pointBuffer.push_back(Point(point, 5.f, colour));
+	//if (_running)
+		_pointBuffer.push_back(Point(point, 5.f, colour));
 
 	_mutex.unlock();
 }
@@ -279,18 +281,22 @@ void Renderer::drawPoint(const glm::vec2& point, const glm::vec3& colour){
 void Renderer::setGraph(unsigned int layer, float xLength, float yMin, float yMax, bool scrolling){
 	_mutex.lock();
 
-	if (layer >= 8)
-		return;
+	//if (_running){
 
-	_graphs[layer].points.clear();
+		if (layer >= 8)
+			return;
 
-	_graphs[layer].active = true;
+		_graphs[layer].points.clear();
 
-	_graphs[layer].xLength = xLength;
-	_graphs[layer].yMin = yMin;
-	_graphs[layer].yMax = yMax;
+		_graphs[layer].active = true;
 
-	_graphs[layer].scrolling = scrolling;
+		_graphs[layer].xLength = xLength;
+		_graphs[layer].yMin = yMin;
+		_graphs[layer].yMax = yMax;
+
+		_graphs[layer].scrolling = scrolling;
+
+	//}
 
 	_mutex.unlock();
 }
@@ -298,10 +304,14 @@ void Renderer::setGraph(unsigned int layer, float xLength, float yMin, float yMa
 void Renderer::drawGraph(const glm::vec2& point, unsigned int layer){
 	_mutex.lock();
 
-	if (layer >= 8)
-		return;
+	//if (_running){
 
-	_graphs[layer].points.push_back(point);
+		if (layer >= 8)
+			return;
+
+		_graphs[layer].points.push_back(point);
+
+	//}
 
 	_mutex.unlock();
 }

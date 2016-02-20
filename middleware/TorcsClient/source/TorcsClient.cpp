@@ -35,17 +35,17 @@ bool TorcsClient::init(const std::string& hostname, unsigned int port){
 	int nRet = WSAStartup(wVer, &wsaData);
 
 	if (nRet == SOCKET_ERROR){
-		std::cout << "Failed to init WinSock library" << std::endl;
+		std::cout << "Failed to init WinSock library!\n";
 		return false;
 	}
 
 	// Resolve hostname
-	hostent* hostInfo = NULL;
+	hostent* hostInfo = nullptr;
 
 	hostInfo = gethostbyname(_hostName.c_str());
 
-	if (hostInfo == NULL){
-		std::cout << "Error: problem interpreting host: " << _hostName.c_str() << "\n";
+	if (hostInfo == nullptr){
+		std::cout << "Problem interpreting host '" << _hostName.c_str() << "'!\n";
 		return false;
 	}
 
@@ -76,6 +76,7 @@ bool TorcsClient::connect(unsigned int attempts){
 	std::string initString = "SCR" + SimpleParser::stringify("init", angles, 19);
 
 	unsigned int attempt = 0;
+	bool silent = false;
 
 	while (!_connected){
 		attempt += 1;
@@ -101,9 +102,8 @@ bool TorcsClient::connect(unsigned int attempts){
 
 			int numRead = recv(_socketDescriptor, _buffer, UDP_MSGLEN, 0);
 
-			if (numRead < 0){
-				std::cout << "Attempting connection!\n";
-			}
+			if (numRead < 0)
+				std::cout << "Attempting connection...\n";
 			else{
 				std::cout << "Received: " << _buffer << "\n";
 
@@ -111,6 +111,11 @@ bool TorcsClient::connect(unsigned int attempts){
 					_connected = true;
 			}
 		}
+		else if (!silent){
+			std::cout << "No response, going silent...\n";
+			silent = true;
+		}
+		
 
 		if (attempts != 0 && attempt >= attempts){
 			std::cout << "Failed after " << attempt << " attempts...\n";

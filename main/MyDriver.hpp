@@ -15,37 +15,34 @@ class MyDriver : public WrapperBaseDriver{
 	Milliseconds _dt = _timeCurrent - _timePrevious;
 	Milliseconds _runtime = Milliseconds::zero();
 
-	float _speedDefault = 130.f;
-	float _speedBoost = 1000.f;
-	float _speedBrake = 30.f;
+	static const float _speedDefault;
+	static const float _speedBoost;
+	static const float _speedBrake;
+	static const int _gearUp[6];
+	static const int _gearDown[6];
+
+	static const float _forwardDivisor;
 
 	bool _clutching = false;
-
-	int _gearUp = 5000;
-	int _gearDown = 3000;
-
-	float _forwardDivisor = 25.f;
-
 	float _trackOffset = 0.f;
 
-	bool _log;
-
-	float _turningAngle = 0.f;
 	std::vector<float> _turningAngleHistory;
-	unsigned int _turningAngleN = 32;
 
-	float getSpeed(CarState& cs);
-	void engageGear(CarControl& cc, int gear = 1);
-	void steer(CarState& cs, CarControl& cc);
-	float obstacle(CarState& cs);
+	bool _log;	
+
+	void _lineSteering(CarState& cs, CarControl& cc);
+	void _smartSteering(CarState& cs, CarControl& cc);
+	void _pedals(CarState& cs, CarControl& cc);
+
+	void _engageGear(CarControl& cc, int gear = 1);
 
 public:
 	MyDriver(bool log = false);
 	~MyDriver();
 
-	void init(float* angles);
-	CarControl wDrive(CarState cs);
-
 	void onRestart();
 	void onShutdown();
+
+	void init(float* angles);
+	CarControl wDrive(CarState cs);
 };

@@ -6,192 +6,47 @@
 #include <algorithm>
 #include "Utils.hpp"
 
-// ###### ########################### ######
-// ###### All temporary testing code! ######
-// ###### ########################### ######
+const float MyDriver::_speedDefault = 60.f;
+const float MyDriver::_speedBoost = 150.f;
+const float MyDriver::_speedBrake = 90.f;
+
+const int MyDriver::_gearUp[6] = { 5000, 6000, 6000, 6500, 7000, 0 };
+const int MyDriver::_gearDown[6] = { 0, 2500, 3000, 3000, 3500, 3500 };
+
+const float MyDriver::_forwardDivisor = 100.f;
 
 MyDriver::MyDriver(bool log){
 	_log = log;
-
-	_speedDefault = 60.f;
-	_speedBoost = 150.f;
-
-	_speedBrake = 90.f;
-
-	_forwardDivisor = 100.f;
 }
 
 MyDriver::~MyDriver(){
 	
 }
 
+void MyDriver::onRestart(){
+	init(nullptr);
+}
+
+void MyDriver::onShutdown(){
+	init(nullptr);
+}
+
 void MyDriver::init(float* angles){
 	// -90, -80, -70, -60, -50, -40, -30, -20, -10, 0, 10, 20, 30, 40, 50, 60, 70, 80, 90
 
-	for (int i = 0; i < 19; i++){
-		angles[i] = -90 + (10 * i);
+	if (angles != nullptr){
+		for (int i = 0; i < 19; i++){
+			angles[i] = -90 + (10 * i);
+		}
 	}
 
 	if (_log){
-		Renderer::get().setGraph(0, 100.f, -1.f, 1.f);
-		Renderer::get().setGraph(1, 100.f, -1.f, 1.f);
-		Renderer::get().setGraph(2, 100.f, -1.f, 1.f);
-
-		//Renderer::get().setGraph(0, 100.f, 0, 6.f, true);
-		//Renderer::get().setGraph(1, 100.f, 0.f, 200.f, true);
-		//Renderer::get().setGraph(2, 100.f, -90.f, 90.f, true);
-		//Renderer::get().setGraph(3, 100.f, 0.f, 6000.f, true);
-		//Renderer::get().setGraph(4, 100.f, 11.f, 1.f, true);
+		Renderer::get().setGraph(0, 100.f, -0.5f, 0.5f);
+		Renderer::get().setGraph(1, 100.f, -0.5f, 0.5f);
+		Renderer::get().setGraph(2, 100.f, -0.5f, 0.5f);
 	}
-	//	Renderer::get().init();
-
-
 }
 
-float MyDriver::obstacle(CarState& cs){
-	//changeRange(-90, 90, 0, 19, )
-
-	float track[36];
-	float car[36];
-
-	for (int i = 0; i < 36; i++){
-		float x = changeRange(0, 35, 0, 18, i);
-	
-		int floor = (int)glm::floor(x);
-		int ceil = (int)glm::ceil(x);
-
-		float tail = x - floor;
-
-		float value = lerp(cs.getTrack(floor), cs.getTrack(ceil), tail);
-
-		track[i] = value;
-		car[i] = cs.getOpponents(i);
-	}
-
-	float size = 3.f;
-	glm::vec2 offset = { 0.f, -256.f };
-
-	for (int i = 0; i < 36; i++){
-
-		float angle = glm::radians(changeRange(0, 35, 360, 0, i)) - glm::radians(90.f);
-
-
-		glm::vec3 colour = { 0.75f, 0.75f, 0.75f };
-
-		float dist = 35.f;
-
-		if (car[i] < dist)
-			colour = { colour.r, car[i] / (dist / colour.g), car[i] / (dist / colour.b) };
-
-
-
-		int maxIndex = 0;
-		float maxCount = track[0] - (dist - car[0] / (200.f / dist));
-
-		for (int x = 0; x < 36; x++){
-
-			float value;
-
-			if (car[x] >= dist)
-				value = track[x];
-			else
-				value = track[x] - (dist - car[x] / (200.f / dist));
-
-			if (value > maxCount){
-				maxIndex = x;
-				maxCount = value;
-			}
-		}
-
-		if (i == maxIndex){
-			colour = { 0.f, 1.f, 0.f };
-
-
-			// P
-
-
-			//float proportional = (((maxIndex + 36 / 2) % 36) * 10.f) + 5.f;
-
-			float proportional = (maxIndex * 10.f) + 5.f;
-
-			proportional = -changeRange(5.f, 355.f, -1.f, 1.f, proportional);
-			
-
-			// I
-			float integral = 0.f;
-			
-			for (float i : _turningAngleHistory)
-				integral += i;
-			
-
-
-			// D
-			float derivative = 0.f;
-			
-			unsigned int gap = 4;
-			
-			if (_turningAngleHistory.size() >= gap)
-				derivative = _turningAngleHistory[_turningAngleHistory.size() - 1] - _turningAngleHistory[_turningAngleHistory.size() - (gap - 1)];
-			
-
-
-			
-			//Renderer::get().drawGraph({ _runtime.count() / 100.f, integral }, 1);
-			//Renderer::get().drawGraph({ _runtime.count() / 100.f, derivative }, 2);
-
-
-			// P + I + D
-			//_turningAngle = proportional + integral / 50.f;
-
-			if (_turningAngleHistory.size() > 2){
-
-				float tolerance = 0.075f;
-
-				float newAngle = proportional + integral / 100.f;
-
-				if (glm::abs(_turningAngleHistory[_turningAngleHistory.size() - 1] - newAngle) < tolerance)
-					_turningAngle = _turningAngleHistory[_turningAngleHistory.size() - 1];
-				else
-					_turningAngle = newAngle;
-			}
-
-
-
-
-			Renderer::get().drawGraph({ _runtime.count() / 100.f, _turningAngle }, 0);
-
-			//std::cout << "P : " << proportional << " - " << "I : " << integral << " - " << "D : " << derivative << "\n";
-
-
-
-
-			// Logging
-			_turningAngleHistory.push_back(_turningAngle);
-
-			if (_turningAngleHistory.size() > _turningAngleN)
-				_turningAngleHistory.erase(_turningAngleHistory.begin());
-		}
-
-		
-
-
-		Renderer::get().drawLine(
-			offset,
-			{ track[i] * glm::cos(angle) * size + offset.x, track[i] * glm::sin(angle) * size + offset.y },
-			colour
-		);
-
-		if (car[i] >= dist)
-			continue;
-
-		Renderer::get().drawPoint(
-			{ car[i] * glm::cos(angle) * size + offset.x, car[i] * glm::sin(angle) * size + offset.y },
-			colour
-		);
-	}
-
-	return 0.f;
-}
 
 CarControl MyDriver::wDrive(CarState cs){
 	_timePrevious = _timeCurrent;
@@ -199,65 +54,64 @@ CarControl MyDriver::wDrive(CarState cs){
 
 	_dt = _timeCurrent - _timePrevious;
 	_runtime += _dt;
-
-
-	if (_log){
-		//Renderer::get().drawGraph({ float(_runtime.count() / 100.0), cs.getGear() }, 0);
-		//Renderer::get().drawGraph({ float(_runtime.count() / 100.0), cs.getSpeedX() }, 1);
-		//Renderer::get().drawGraph({ float(_runtime.count() / 100.0), glm::degrees(cs.getAngle()) }, 2);
-		//Renderer::get().drawGraph({ float(_runtime.count() / 100.0), cs.getRpm() }, 3);
-		//Renderer::get().drawGraph({ float(_runtime.count() / 100.0), cs.getRacePos() }, 4);
-	}
 	
 	CarControl cc;
 
-	steer(cs, cc);
+	//lineSteering(cs, cc);
+	_smartSteering(cs, cc);
 
+	_pedals(cs, cc);
+	
+	if (_log)
+		Renderer::get().setWindowTitle(std::to_string(_dt.count()));
+
+	return cc;
+}
+
+void MyDriver::_lineSteering(CarState& cs, CarControl& cc){
+
+	float leftTrack = cs.getTrack(0 + 2);
+	float rightTrack = cs.getTrack(TRACK_SENSORS_NUM - 1 - 2);
+
+	_trackOffset = 0.f;
+
+	float total = _trackOffset * (leftTrack + rightTrack);
+
+	float steer = (leftTrack - total / 2) - (rightTrack + total / 2);
+
+	cc.setSteer(steer);
+}
+
+void MyDriver::_pedals(CarState& cs, CarControl& cc){
 	float forward = cs.getTrack((TRACK_SENSORS_NUM - 1) / 2) / _forwardDivisor;
+
+	int gear = cs.getGear();
+	int rpm = cs.getRpm();
 
 	if (_runtime.count() > 5000.f)
 		cc.setAccel(1.f);
 
-	if (getSpeed(cs) < _speedDefault - (forward * _speedBrake) + (forward * _speedBoost)){
+	if (cs.getSpeedX() < _speedDefault - (forward * _speedBrake) + (forward * _speedBoost)){
 		if (cs.getGear() == 0)
-			engageGear(cc);
-		else if (cs.getRpm() > _gearUp && cs.getGear() != 6)
-			engageGear(cc, cs.getGear() + 1);
+			_engageGear(cc);
+		else if (rpm >= _gearUp[gear - 1] && cs.getGear() != 6)
+			_engageGear(cc, cs.getGear() + 1);
 
 
 		if (!_clutching)
 			cc.setAccel(1.f);
 	}
 	else{
-		if (cs.getRpm() < _gearDown && cs.getGear() != 2)
-			engageGear(cc, cs.getGear() - 1);
+		if (rpm <= _gearDown[gear - 1] && cs.getGear() != 2)
+			_engageGear(cc, cs.getGear() - 1);
 
 		cc.setAccel(0.f);
 		cc.setBrake(forward);
 	}
-
-
-
-	if (_log){
-		Renderer::get().setWindowTitle(std::to_string(_dt.count()));
-
-		obstacle(cs);		
-		
-		//Renderer::get().update();
-	}
-
-
-
-	return cc;
 }
 
-float MyDriver::getSpeed(CarState& cs){
-	glm::vec3 vector = glm::vec3(cs.getSpeedX(), cs.getSpeedY(), cs.getSpeedZ());
 
-	return glm::length(vector);
-}
-
-void MyDriver::engageGear(CarControl& cc, int gear){
+void MyDriver::_engageGear(CarControl& cc, int gear){
 	if (!_clutching){
 		_clutching = true;
 		cc.setClutch(1.f);
@@ -273,99 +127,119 @@ void MyDriver::engageGear(CarControl& cc, int gear){
 	}
 }
 
-void MyDriver::steer(CarState& cs, CarControl& cc){
+void MyDriver::_smartSteering(CarState& cs, CarControl& cc){
+	float track[36];
+	float car[36];
 
+	// Lerping track sensors into 36 equal sensors
+	for (int i = 0; i < 36; i++){
+		float x = changeRange(0, 35, 0, 18, i);
 
-	// Get 
+		int floor = (int)glm::floor(x);
+		int ceil = (int)glm::ceil(x);
 
+		float tail = x - floor;
 
+		float value = lerp(cs.getTrack(floor), cs.getTrack(ceil), tail);
 
+		track[i] = value;
+		car[i] = cs.getOpponents(i);
+	}
 
+	// Rendering values
+	float size = 3.f;
+	glm::vec2 offset = { 0.f, -256.f };
 
+	// For each sensors in track and car sensors
+	for (int i = 0; i < 36; i++){
+		float angle = glm::radians(changeRange(0, 35, 360, 0, i)) - glm::radians(90.f);
 
+		glm::vec3 colour = { 0.75f, 0.75f, 0.75f };
 
+		float dist = 35.f;
 
-	float leftTrack = cs.getTrack(0 + 2);
-	float rightTrack = cs.getTrack(TRACK_SENSORS_NUM - 1 - 2);
+		if (car[i] < dist)
+			colour = { colour.r, car[i] / (dist / colour.g), car[i] / (dist / colour.b) };
 
-	////float _trackOffset = 0.f;
-	//
-	//float carsRight = cs.getOpponents(1);
-	//float carsLeft = cs.getOpponents(36 - 2);
-	//
-	//_trackOffset = (carsRight - carsLeft) / 200.f;
-	
+		int maxIndex = 0;
+		float maxCount = track[0] - (dist - car[0] / (200.f / dist));
 
-	//float rightThreat = 0.f;
-	//float leftThreat = 0.f;
-	//
-	//for (int i = 0; i < 6; i++){
-	//	rightThreat += cs.getOpponents(i);
-	//	leftThreat += cs.getOpponents((36 - 1) - i);
-	//}
+		for (int x = 0; x < 36; x++){
+			float value;
 
-	//std::cout << leftThreat << " - " << rightThreat << "\n";
+			if (car[x] < dist)
+				value = track[x] - (dist - car[x] / (200.f / dist));
+			else
+				value = track[x];
 
+			if (value > maxCount){
+				maxIndex = x;
+				maxCount = value;
+			}
+		}
 
+		if (i == maxIndex){
+			float p_divisor = 1.f;
+			float i_divisor = 100.f;
+			float d_divisor = 1.f;
 
+			unsigned int i_length = 16;
+			unsigned int d_gap = 2;
 
+			// P
+			float proportional = (maxIndex * 10.f) + 5.f;
 
-	//float offset = (section + 0.5f) / 5.5f;
+			proportional = -changeRange(5.f, 355.f, -1.f, 1.f, proportional);
 
-	float leftThreat = ((200.f - cs.getOpponents(17)) / 200.f) + ((200.f - cs.getOpponents(16)) / 200.f) + ((200.f - cs.getOpponents(15)) / 200.f);
+			proportional /= p_divisor;
 
-	float rightThreat = ((200.f - cs.getOpponents(18)) / 200.f) + ((200.f - cs.getOpponents(19)) / 200.f) + ((200.f - cs.getOpponents(20)) / 200.f);
+			// I
+			float integral = 0.f;
 
-	float threat = leftThreat + rightThreat;
+			for (float i : _turningAngleHistory)
+				integral += i;
 
+			integral /= i_divisor;
 
-	//if (threat > 0.95f){
-	//	_trackOffset = glm::mix(_trackOffset, -0.75f, 0.05f);
-	//}
-	//else{
-	//	_trackOffset = glm::mix(_trackOffset, 0.75f, 0.05f);
-	//}
+			// D
+			float derivative = 0.f;
 
-	_trackOffset = 0.f;
+			if (_turningAngleHistory.size() >= d_gap)
+				derivative = _turningAngleHistory[_turningAngleHistory.size() - 1] - _turningAngleHistory[_turningAngleHistory.size() - (d_gap - 1)];
 
-	//if (_log)
-	//	std::cout << threat << "\n";
+			derivative /= d_divisor;
 
-	//std::cout << _trackOffset << "\n";
+			// P + I + D
+			float newAngle = proportional + integral + derivative;
 
-	//cc.getSteer
+			cc.setSteer(newAngle);
 
-	//float steer = left - right;
+			// Graphing
+			Renderer::get().drawGraph({ _runtime.count() / 100.f, newAngle }, 1);
 
-	//_trackOffset = 0.f;
+			// Adding to history
+			_turningAngleHistory.push_back(newAngle);
 
+			if (_turningAngleHistory.size() > i_length)
+				_turningAngleHistory.erase(_turningAngleHistory.begin());
 
-	float total = _trackOffset * (leftTrack + rightTrack);
+			colour = { 0.f, 1.f, 0.f };
+		}
 
-	float steer = (leftTrack - total / 2) - (rightTrack + total / 2);
+		if (_log){
+			Renderer::get().drawLine(
+				offset,
+				{ track[i] * glm::cos(angle) * size + offset.x, track[i] * glm::sin(angle) * size + offset.y },
+				colour
+				);
 
+			if (car[i] >= dist)
+				continue;
 
-
-	
-
-
-
-
-	//steer
-
-	//float avoid = (left - right) - (cs.getOpponents(0) / 200.f);
-
-	//std::cout << avoid << "\n";
-
-	cc.setSteer(_turningAngle);
-
-	//cc.setSteer(steer);
-}
-
-void MyDriver::onRestart(){
-
-}
-
-void MyDriver::onShutdown(){
-
+			Renderer::get().drawPoint(
+			{ car[i] * glm::cos(angle) * size + offset.x, car[i] * glm::sin(angle) * size + offset.y },
+			colour
+			);
+		}
+	}
 }

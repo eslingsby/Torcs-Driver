@@ -34,7 +34,7 @@ public:
 		ABORT = 1
 	};
 
-	bool init(const std::string& hostname = "localhost", unsigned int port = 3001);
+	bool init(const std::string& hostname, unsigned int port);
 
 	bool connect(unsigned int attempts = 0);
 
