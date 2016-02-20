@@ -8,6 +8,8 @@
 #define UDP_MSGLEN 1000
 #define UDP_CLIENT_TIMEUOT 1000000
 
+#define ATTEMPT_SLEEP_TIME 1000
+
 #define CLOSE(x) closesocket(x)
 
 #define INVALID(x) x == INVALID_SOCKET

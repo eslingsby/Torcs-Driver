@@ -70,19 +70,7 @@ class Renderer{
 
 	std::array<Graph, 8> _graphs;
 
-	std::array<glm::vec3, 8> _layerColours = { {
-
-		glm::vec3(0.f, 1.f, 1.f),// 011 C
-		glm::vec3(1.f, 0.f, 1.f),// 101 M
-		glm::vec3(1.f, 1.f, 0.f),// 110 Y
-		glm::vec3(1.f, 1.f, 1.f),// 111 K
-
-		glm::vec3(1.f, 0.f, 0.f),// 100 R
-		glm::vec3(0.f, 1.f, 0.f),// 010 G
-		glm::vec3(0.f, 0.f, 1.f),// 001 B
-		glm::vec3(0.f, 0.f, 0.f) // 000 W
-		
-	} };
+	static const glm::vec3 Renderer::_layerColours[8];
 
 	void _drawLines();
 	void _drawPoints();
