@@ -16,12 +16,14 @@ class MyDriver : public WrapperBaseDriver{
 	Milliseconds _runtime = Milliseconds::zero();
 
 	static const float _speedDefault;
+
 	static const float _speedBoost;
 	static const float _speedBrake;
-	static const int _gearUp[6];
-	static const int _gearDown[6];
 
 	static const float _forwardDivisor;
+
+	static const int _gearUp[6];
+	static const int _gearDown[6];
 
 	bool _clutching = false;
 	float _trackOffset = 0.f;

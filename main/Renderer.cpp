@@ -4,6 +4,17 @@
 #include <array>
 #include "Utils.hpp"
 
+const glm::vec3 Renderer::_layerColours[8] = {
+	{ 0.f, 1.f, 1.f },// 011 C
+	{ 1.f, 0.f, 1.f },// 101 M
+	{ 1.f, 1.f, 0.f },// 110 Y
+	{ 1.f, 1.f, 1.f },// 111 K
+	{ 1.f, 0.f, 0.f },// 100 R
+	{ 0.f, 1.f, 0.f },// 010 G
+	{ 0.f, 0.f, 1.f },// 001 B
+	{ 0.f, 0.f, 0.f } // 000 W
+};
+
 bool Renderer::init(){
 	close();
 
@@ -82,7 +93,6 @@ void Renderer::_reshape(){
 
 	glTranslatef(_position.x, _position.y, 0);
 }
-
 
 void Renderer::_drawLines(){
 	// Draw track sensors
@@ -209,27 +219,35 @@ void Renderer::_drawGraphs(){
 }
 
 void Renderer::update(){
-	SDL_Event event;
-	while (SDL_PollEvent(&event)){
-		if (event.type == SDL_QUIT){
-			close();
-			return;
+	if (_running){
+		SDL_Event event;
+		while (SDL_PollEvent(&event)){
+			if (event.type == SDL_QUIT){
+				close();
+				return;
+			}
+			else if (event.type == SDL_KEYDOWN){
+				if (event.key.keysym.sym == SDLK_ESCAPE){
+					close();
+					return;
+				}
+			}
 		}
+
+		_flip();
+		_reshape();
+
+		_mutex.lock();
+
+		SDL_SetWindowTitle(_window, _title.c_str());
+
+		_drawLines();
+		_drawPoints();
+
+		_drawGraphs();
+
+		_mutex.unlock();
 	}
-
-	_flip();
-	_reshape();
-
-	_mutex.lock();
-
-	SDL_SetWindowTitle(_window, _title.c_str());
-	
-	_drawLines();
-	_drawPoints();
-
-	_drawGraphs();
-	
-	_mutex.unlock();
 }
 
 void Renderer::setPosition(const glm::vec2& position){
@@ -262,7 +280,7 @@ bool Renderer::running(){
 void Renderer::drawLine(const glm::vec2& start, const glm::vec2& end, const glm::vec3& colour){
 	_mutex.lock();
 
-	//if (_running)
+	if (_running)
 		_lineBuffer.push_back(Line(start, end, colour));
 
 	_mutex.unlock();
@@ -271,7 +289,7 @@ void Renderer::drawLine(const glm::vec2& start, const glm::vec2& end, const glm:
 void Renderer::drawPoint(const glm::vec2& point, const glm::vec3& colour){
 	_mutex.lock();
 
-	//if (_running)
+	if (_running)
 		_pointBuffer.push_back(Point(point, 5.f, colour));
 
 	_mutex.unlock();
@@ -281,22 +299,18 @@ void Renderer::drawPoint(const glm::vec2& point, const glm::vec3& colour){
 void Renderer::setGraph(unsigned int layer, float xLength, float yMin, float yMax, bool scrolling){
 	_mutex.lock();
 
-	//if (_running){
+	if (layer >= 8)
+		return;
 
-		if (layer >= 8)
-			return;
+	_graphs[layer].points.clear();
 
-		_graphs[layer].points.clear();
+	_graphs[layer].active = true;
 
-		_graphs[layer].active = true;
+	_graphs[layer].xLength = xLength;
+	_graphs[layer].yMin = yMin;
+	_graphs[layer].yMax = yMax;
 
-		_graphs[layer].xLength = xLength;
-		_graphs[layer].yMin = yMin;
-		_graphs[layer].yMax = yMax;
-
-		_graphs[layer].scrolling = scrolling;
-
-	//}
+	_graphs[layer].scrolling = scrolling;
 
 	_mutex.unlock();
 }
@@ -304,14 +318,12 @@ void Renderer::setGraph(unsigned int layer, float xLength, float yMin, float yMa
 void Renderer::drawGraph(const glm::vec2& point, unsigned int layer){
 	_mutex.lock();
 
-	//if (_running){
-
+	if (_running){
 		if (layer >= 8)
 			return;
 
 		_graphs[layer].points.push_back(point);
-
-	//}
+	}
 
 	_mutex.unlock();
 }

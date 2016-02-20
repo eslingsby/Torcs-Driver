@@ -76,6 +76,7 @@ bool TorcsClient::connect(unsigned int attempts){
 	std::string initString = "SCR" + SimpleParser::stringify("init", angles, 19);
 
 	unsigned int attempt = 0;
+	bool openPort = false;
 	bool silent = false;
 
 	while (!_connected){
@@ -114,15 +115,14 @@ bool TorcsClient::connect(unsigned int attempts){
 		else if (!silent){
 			std::cout << "No response, going silent...\n";
 			silent = true;
-		}
-		
+		}		
 
 		if (attempts != 0 && attempt >= attempts){
 			std::cout << "Failed after " << attempt << " attempts...\n";
 			return false;
 		}
 
-		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+		std::this_thread::sleep_for(std::chrono::milliseconds(ATTEMPT_SLEEP_TIME));
 	}
 
 	return true;

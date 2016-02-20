@@ -11,7 +11,7 @@
 #define RENDERING 1
 
 int main(int argc, char* argv[]){
-	std::string hostname = "localhost";
+	std::string hostname = "";
 	unsigned int firstPort = 3001;
 
 	std::list<BaseDriver*> drivers;

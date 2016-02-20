@@ -7,13 +7,14 @@
 #include "Utils.hpp"
 
 const float MyDriver::_speedDefault = 60.f;
+
 const float MyDriver::_speedBoost = 150.f;
 const float MyDriver::_speedBrake = 90.f;
 
+const float MyDriver::_forwardDivisor = 100.f;
+
 const int MyDriver::_gearUp[6] = { 5000, 6000, 6000, 6500, 7000, 0 };
 const int MyDriver::_gearDown[6] = { 0, 2500, 3000, 3000, 3500, 3500 };
-
-const float MyDriver::_forwardDivisor = 100.f;
 
 MyDriver::MyDriver(bool log){
 	_log = log;
@@ -47,7 +48,6 @@ void MyDriver::init(float* angles){
 	}
 }
 
-
 CarControl MyDriver::wDrive(CarState cs){
 	_timePrevious = _timeCurrent;
 	_timeCurrent = Clock::now();
@@ -57,7 +57,7 @@ CarControl MyDriver::wDrive(CarState cs){
 	
 	CarControl cc;
 
-	//lineSteering(cs, cc);
+	//_lineSteering(cs, cc);
 	_smartSteering(cs, cc);
 
 	_pedals(cs, cc);
@@ -79,6 +79,10 @@ void MyDriver::_lineSteering(CarState& cs, CarControl& cc){
 
 	float steer = (leftTrack - total / 2) - (rightTrack + total / 2);
 
+	if (_log)
+		Renderer::get().drawGraph({ _runtime.count() / 100.f, steer }, 1);
+
+
 	cc.setSteer(steer);
 }
 
@@ -92,24 +96,23 @@ void MyDriver::_pedals(CarState& cs, CarControl& cc){
 		cc.setAccel(1.f);
 
 	if (cs.getSpeedX() < _speedDefault - (forward * _speedBrake) + (forward * _speedBoost)){
-		if (cs.getGear() == 0)
+		if (gear == 0)
 			_engageGear(cc);
-		else if (rpm >= _gearUp[gear - 1] && cs.getGear() != 6)
-			_engageGear(cc, cs.getGear() + 1);
+		else if (rpm >= _gearUp[gear - 1] && gear != 6)
+			_engageGear(cc, gear + 1);
 
 
 		if (!_clutching)
 			cc.setAccel(1.f);
 	}
 	else{
-		if (rpm <= _gearDown[gear - 1] && cs.getGear() != 2)
-			_engageGear(cc, cs.getGear() - 1);
+		if (rpm <= _gearDown[gear - 1] && gear != 2)
+			_engageGear(cc, gear - 1);
 
 		cc.setAccel(0.f);
 		cc.setBrake(forward);
 	}
 }
-
 
 void MyDriver::_engageGear(CarControl& cc, int gear){
 	if (!_clutching){
@@ -215,7 +218,8 @@ void MyDriver::_smartSteering(CarState& cs, CarControl& cc){
 			cc.setSteer(newAngle);
 
 			// Graphing
-			Renderer::get().drawGraph({ _runtime.count() / 100.f, newAngle }, 1);
+			if (_log)
+				Renderer::get().drawGraph({ _runtime.count() / 100.f, newAngle }, 1);
 
 			// Adding to history
 			_turningAngleHistory.push_back(newAngle);
@@ -228,17 +232,17 @@ void MyDriver::_smartSteering(CarState& cs, CarControl& cc){
 
 		if (_log){
 			Renderer::get().drawLine(
-				offset,
-				{ track[i] * glm::cos(angle) * size + offset.x, track[i] * glm::sin(angle) * size + offset.y },
-				colour
+					offset,
+					{ track[i] * glm::cos(angle) * size + offset.x, track[i] * glm::sin(angle) * size + offset.y },
+					colour
 				);
 
 			if (car[i] >= dist)
 				continue;
 
 			Renderer::get().drawPoint(
-			{ car[i] * glm::cos(angle) * size + offset.x, car[i] * glm::sin(angle) * size + offset.y },
-			colour
+				{ car[i] * glm::cos(angle) * size + offset.x, car[i] * glm::sin(angle) * size + offset.y },
+				colour
 			);
 		}
 	}
