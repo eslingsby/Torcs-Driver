@@ -17,28 +17,35 @@ float randomOffset(float range){
 //const float MyDriver::_speedBoost = 150.f;
 //const float MyDriver::_speedBrake = 90.f;
 
-const float MyDriver::_forwardDivisor = 100.f;
+const float MyDriver::_forwardDivisor = 75.f;
 
 const int MyDriver::_gearUp[6] = { 5000, 6000, 6000, 6500, 7000, 0 };
 const int MyDriver::_gearDown[6] = { 0, 2500, 3000, 3000, 3500, 3500 };
 
-const float MyDriver::_obstacleDistance = 6.f;
-const float MyDriver::_obstacleDivisor = 0.25f;
-const float MyDriver::_obstacleBrake = 2.f;
+const float MyDriver::_obstacleDivisor = 0.125f; // Smaller the sharper turns are to avoid obstacales
+const float MyDriver::_obstacleBrake = 2.f; // The larger the sharper the car will brake for  for obstacles
+
+const float MyDriver::_forwardDistance = 10.f; // The larger the earlier the car will slow down for obstacles
+const float MyDriver::_steerDistance = 30.f; // The larger the earlier the car will steer for obstacles
+
+const unsigned int  MyDriver::_forwardSpan = 2; // How many sensors will be used for forward obstacle detection
+const unsigned int  MyDriver::_sideSpan = 9; // How many sensors will be used for obstacle detection around the sides
+
+const float  MyDriver::_speedToTurn = 5.f; // The larger the slower the car turns at high speeds
+
+const float MyDriver::_oppenentLine = 30.f; // The minimum distance of opponent to care about when looking for optimal track line
 
 MyDriver::MyDriver(bool log){
 	_log = log;
 
 
 	_speedDefault = 60.f;
-
 	_speedBoost = 150.f;
-
 	_speedBrake = 90.f;
 
 
 	if (!_log){
-		_speedDefault += randomOffset(80.f);
+		_speedDefault += randomOffset(40.f);
 		//_speedBoost += randomOffset(80.f);
 		//_speedBrake += randomOffset(80.f);
 	}
@@ -121,7 +128,7 @@ void MyDriver::_steerClamps(CarState& cs){
 
 	unsigned int middle = 36 / 2;
 
-	_obstacleAhead = _checkObstacles(cs, middle - 1, middle, 30.f);
+	_obstacleAhead = _checkObstacles(cs, middle - _forwardSpan, middle + (_forwardSpan - 1), _forwardDistance);
 
 	//glm::vec2 forwardLeft = _checkObstacles(cs, middle - 6, middle - 3);
 	//glm::vec2 forwardRight = _checkObstacles(cs, middle + 2, middle + 5);
@@ -131,10 +138,10 @@ void MyDriver::_steerClamps(CarState& cs){
 	//int start = 0;
 	//int end = 5;
 
-	float distance = 15.f;
+	//float distance = 15.f;
 
-	float forwardLeft = -_checkObstacles(cs, middle - 9, middle - 1, distance) / (cs.getSpeedX() / 10.f);
-	float forwardRight = _checkObstacles(cs, middle, middle + 8, distance) / (cs.getSpeedX() / 10.f);
+	float forwardLeft = -_checkObstacles(cs, middle - _sideSpan, middle - 1, _steerDistance) / (cs.getSpeedX() / _speedToTurn);
+	float forwardRight = _checkObstacles(cs, middle, middle + (_sideSpan - 1), _steerDistance) / (cs.getSpeedX() / _speedToTurn);
 
 	//_steerPush.x = -(1.f - forwardLeft.y) / _obstacleDivisor;
 	//_steerPush.y = (1.f - forwardRight.y) / _obstacleDivisor;
@@ -200,8 +207,8 @@ void MyDriver::_pedals(CarState& cs, CarControl& cc){
 	int gear = cs.getGear();
 	int rpm = cs.getRpm();
 
-	if (_runtime.count() > 5000.f)
-		cc.setAccel(1.f);
+	if (gear == -1)
+		_engageGear(cc, 1);
 
 	if (cs.getSpeedX() < _speedDefault - (forward * _speedBrake) + (forward * _speedBoost)){
 		if (gear == 0)
@@ -267,7 +274,7 @@ void MyDriver::_smartSteering(CarState& cs, CarControl& cc){
 
 		glm::vec3 colour = { 0.75f, 0.75f, 0.75f };
 
-		float dist = 25.f;
+		float dist = _oppenentLine;
 
 		if (car[i] < dist)
 			colour = { colour.r, car[i] / (dist / colour.g), car[i] / (dist / colour.b) };

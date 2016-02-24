@@ -23,11 +23,14 @@ void parseArgs(int argc, char* argv[], std::string& hostName, unsigned int& star
 
 void makeDrivers(DriverList& drivers){
 	drivers.push_back(new MyDriver(true));
+	drivers.push_back(new SimpleDriver);
+
+
 	drivers.push_back(new MyDriver);
+	//drivers.push_back(new MyDriver);
+
 	drivers.push_back(new MyDriver);
-	drivers.push_back(new MyDriver);
-	//drivers.push_back(new SimpleDriver);
-	//drivers.push_back(new SimpleDriver);
+
 	//drivers.push_back(new SimpleDriver);
 }
 

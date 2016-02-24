@@ -30,9 +30,18 @@ class MyDriver : public WrapperBaseDriver{
 	static const int _gearUp[6];
 	static const int _gearDown[6];
 
-	static const float _obstacleDistance;
 	static const float _obstacleDivisor;
 	static const float _obstacleBrake;
+
+	static const float _forwardDistance;
+	static const float _steerDistance;
+
+	static const unsigned int _forwardSpan;
+	static const unsigned int _sideSpan;
+
+	static const float _speedToTurn;
+
+	static const float _oppenentLine;
 
 	bool _clutching = false;
 	float _trackOffset = 0.f;
