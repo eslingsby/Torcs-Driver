@@ -44,12 +44,14 @@
     <OutDir>$(SolutionDir)bin\</OutDir>
     <IntDir>$(SolutionDir)build\$(Configuration)\$(ProjectName)\</IntDir>
     <LibraryPath>$(SolutionDir)bin;$(LibraryPath)</LibraryPath>
+    <TargetName>$(SolutionName)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IncludePath>$(SolutionDir)middleware\TorcsClient\include;$(SolutionDir)middleware\FANN-2.2.0\include;$(SolutionDir)middleware\SimpleDriver\include;$(SolutionDir)middleware\ANNDriver\include;$(SolutionDir)middleware\glm-0.9.7.2\include;$(SolutionDir)middleware\SDL2-2.0.4\include;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)bin\</OutDir>
     <IntDir>$(SolutionDir)build\$(Configuration)\$(ProjectName)\</IntDir>
     <LibraryPath>$(SolutionDir)bin;$(LibraryPath)</LibraryPath>
+    <TargetName>$(SolutionName)</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

@@ -4,13 +4,13 @@
 #include <chrono>
 #include <thread>
 
-void race_thread(const std::string& hostname, unsigned int port, BaseDriver* driver){
+void race_thread(const std::string& hostName, unsigned int port, BaseDriver* driver){
 	int code = TorcsClient::RESET;
 
-	while (code == TorcsClient::RESET){
-		TorcsClient client;
+	TorcsClient client;
 
-		if (!client.init(hostname, port))
+	while (code == TorcsClient::RESET){
+		if (!client.init(hostName, port))
 			return;
 
 		client.setDriver(driver);
@@ -22,24 +22,35 @@ void race_thread(const std::string& hostname, unsigned int port, BaseDriver* dri
 	}
 
 	if (code == TorcsClient::ABORT)
-		std::cout << "Something went wrong!\n";
+		std::cout << "Something went wrong in race loop on port " << port << "!\n";
 }
 
-bool TorcsClient::init(const std::string& hostname, unsigned int port){
-	_hostName = hostname;
-	_serverPort = port;
-
-	// WSA Startup
+TorcsClient::TorcsClient(){
 	WSADATA wsaData = { 0 };
 	WORD wVer = MAKEWORD(2, 2);
 	int nRet = WSAStartup(wVer, &wsaData);
 
 	if (nRet == SOCKET_ERROR){
 		std::cout << "Failed to init WinSock library!\n";
-		return false;
+		return;
 	}
 
-	// Resolve hostname
+	_wsaInit = true;
+}
+
+TorcsClient::~TorcsClient(){
+	if (_wsaInit)
+		WSACleanup();
+}
+
+bool TorcsClient::init(const std::string& hostName, unsigned int port){
+	_hostName = hostName;
+	_serverPort = port;
+
+	if (!_wsaInit)
+		return false;
+
+	// Resolve hostName
 	hostent* hostInfo = nullptr;
 
 	hostInfo = gethostbyname(_hostName.c_str());
@@ -133,14 +144,15 @@ void TorcsClient::setDriver(BaseDriver* driver){
 }
 
 int TorcsClient::run(){
-	if (_driver == nullptr)
+	if (_driver == nullptr || !_wsaInit){
+		_connected = false;
 		return 1;
+	}
 
 	fd_set readSet;
 	timeval timeVal;
 
-	unsigned int maxTimeout = 16;
-	unsigned int curTimeout = maxTimeout;
+	unsigned int curTimeout = _timout;
 
 	bool reset = false;
 
@@ -152,8 +164,8 @@ int TorcsClient::run(){
 		timeVal.tv_usec = UDP_CLIENT_TIMEUOT;
 
 		if (select(_socketDescriptor + 1, &readSet, NULL, NULL, &timeVal)){
-			if (curTimeout != maxTimeout)
-				curTimeout = maxTimeout;
+			if (curTimeout != _timout)
+				curTimeout = _timout;
 
 			// Read data sent by the solorace server
 			memset(_buffer, 0x0, UDP_MSGLEN);  // Zero out the buffer.
@@ -163,6 +175,7 @@ int TorcsClient::run(){
 			if (numRead < 0){
 				std::cout << "No response from server!";
 				CLOSE(_socketDescriptor);
+				_connected = false;
 				return 1;
 			}
 
@@ -198,8 +211,10 @@ int TorcsClient::run(){
 		else{
 			curTimeout--;
 
-			if (curTimeout == 0)
+			if (curTimeout == 0){
+				_connected = false;
 				return -1;
+			}
 
 			std::cout << "Server did not respond, " << curTimeout << " retries left...\n";
 		}
@@ -207,7 +222,7 @@ int TorcsClient::run(){
 
 	CLOSE(_socketDescriptor);
 
-	WSACleanup();
+	_connected = false;
 
 	if (reset)
 		return -1;

@@ -14,7 +14,7 @@
 
 #define INVALID(x) x == INVALID_SOCKET
 
-void race_thread(const std::string& hostname, unsigned int port, BaseDriver* driver);
+void race_thread(const std::string& hostName, unsigned int port, BaseDriver* driver);
 
 class TorcsClient{
 	std::string _hostName;
@@ -23,6 +23,10 @@ class TorcsClient{
 	SOCKET _socketDescriptor;
 	sockaddr_in _serverAddress;
 
+	bool _wsaInit = false;
+
+	unsigned int _timout = 16;
+
 	char _buffer[UDP_MSGLEN];
 
 	BaseDriver* _driver = nullptr;
@@ -30,13 +34,17 @@ class TorcsClient{
 	bool _connected = false;
 
 public:
+	TorcsClient();
+
+	~TorcsClient();
+
 	enum RUN_CODES{
 		RESET = -1,
 		SHUTDOWN = 0,
 		ABORT = 1
 	};
 
-	bool init(const std::string& hostname, unsigned int port);
+	bool init(const std::string& hostName, unsigned int port);
 
 	bool connect(unsigned int attempts = 0);
 
