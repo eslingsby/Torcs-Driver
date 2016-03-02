@@ -45,7 +45,7 @@ struct Graph{
 
 	bool scrolling = false;
 
-	std::vector<const glm::vec2> points;
+	std::vector<glm::vec2> points;
 };
 
 class Renderer{

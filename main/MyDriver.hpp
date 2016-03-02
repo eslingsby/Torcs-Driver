@@ -2,8 +2,6 @@
 
 #include <WrapperBaseDriver.h>
 #include <chrono>
-#include <glm\glm.hpp>
-#include <vector>
 
 class MyDriver : public WrapperBaseDriver{
 	typedef chrono::high_resolution_clock Clock;
@@ -15,58 +13,40 @@ class MyDriver : public WrapperBaseDriver{
 	Milliseconds _dt = _timeCurrent - _timePrevious;
 	Milliseconds _runtime = Milliseconds::zero();
 
-	float MyDriver::_speedDefault;
-	float MyDriver::_speedBoost;
-	float MyDriver::_speedBrake;
-
-
-	//static const float _speedDefault;
-	//
-	//static const float _speedBoost;
-	//static const float _speedBrake;
-
-	static const float _forwardDivisor;
+	const bool _log;
 
 	static const int _gearUp[6];
 	static const int _gearDown[6];
 
-	static const float _obstacleDivisor;
-	static const float _obstacleBrake;
+	static const int _maxBlock;
 
-	static const float _forwardDistance;
-	static const float _steerDistance;
+	static const float _middleDrift;
 
-	static const unsigned int _forwardSpan;
-	static const unsigned int _sideSpan;
+	static const float _awarnessTrack;
+	static const float _awarnessOpponent;
 
-	static const float _speedToTurn;
+	static const float _easeSteer;
+	static const float _easeBrake;
+	static const float _easeAccel;
 
-	static const float _oppenentLine;
+	struct{
+		float steer = 0.f;
 
-	bool _clutching = false;
-	float _trackOffset = 0.f;
-	glm::vec2 _steerPush = { 0.f, 0.f };
-	float _obstacleAhead = 0.f;
+		int gear = 1;
 
-	std::vector<float> _turningAngleHistory;
-	std::vector<glm::vec2> _steerPushHistory;
+		float speed = 0.f;
+		float brake = 0.f;
+		float boostTime = 20000;
 
-	bool _log;	
-
-	void _steerClamps(CarState& cs);
-	float _checkObstacles(CarState& cs, unsigned int start, unsigned end, float distance);
-	void _lineSteering(CarState& cs, CarControl& cc);
-	void _smartSteering(CarState& cs, CarControl& cc);
-	void _pedals(CarState& cs, CarControl& cc);
-	void _engageGear(CarControl& cc, int gear = 1);
+		float sensors[36];
+	}_driving;
 
 public:
 	MyDriver(bool log = false);
-	~MyDriver();
 
 	void onRestart();
 	void onShutdown();
 
-	void init(float* angles);
+	void init(float* angles = nullptr);
 	CarControl wDrive(CarState cs);
 };
