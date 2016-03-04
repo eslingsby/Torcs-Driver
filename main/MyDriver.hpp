@@ -2,6 +2,7 @@
 
 #include <WrapperBaseDriver.h>
 #include <chrono>
+#include <vector>
 
 class MyDriver : public WrapperBaseDriver{
 	typedef chrono::high_resolution_clock Clock;
@@ -13,7 +14,9 @@ class MyDriver : public WrapperBaseDriver{
 	Milliseconds _dt = _timeCurrent - _timePrevious;
 	Milliseconds _runtime = Milliseconds::zero();
 
-	const bool _log;
+	unsigned int _logging;
+
+	static const float _nonLoggingStunt;
 
 	static const float _trackAngles[19];
 
@@ -21,6 +24,7 @@ class MyDriver : public WrapperBaseDriver{
 	static const int _gearDown[6];
 
 	static const int _maxBlock;
+	static const float _blockDropOff;
 
 	static const float _middleDrift;
 
@@ -30,21 +34,32 @@ class MyDriver : public WrapperBaseDriver{
 	static const float _easeSteer;
 	static const float _easeBrake;
 	static const float _easeAccel;
+	
+	static const float _p;
+	static const float _i;
+	static const float _d;
+
+	static const unsigned int _historySteerLength;
 
 	struct{
-		float steer = 0.f;
+		float sensors[36];
+		float delta[36];
 
+		unsigned int furthestRay = 9;
+
+		float steer = 0.f;
+		std::vector<float> steerHistory;
+		
 		int gear = 1;
 
 		float speed = 0.f;
 		float brake = 0.f;
-		float boostTime = 20000;
 
-		float sensors[36];
+		bool crashed = false;
 	}_driving;
 
 public:
-	MyDriver(bool log = false);
+	MyDriver(unsigned int logging = 0);
 
 	void onRestart();
 	void onShutdown();

@@ -252,35 +252,35 @@ void Renderer::update(){
 }
 
 void Renderer::setPosition(const glm::vec2& position){
-	//_mutex.lock();
+	_mutex.lock();
 
 	_position = position;
 
-	//_mutex.unlock();
+	_mutex.unlock();
 }
 
 void Renderer::setRotation(float rotation){
-	//_mutex.lock();
+	_mutex.lock();
 
 	_rotation = glm::quat(glm::vec3(0, 0, glm::radians(rotation)));
 
-	//_mutex.unlock();
+	_mutex.unlock();
 }
 
 void Renderer::setZoom(float zoom){
-	//_mutex.lock();
+	_mutex.lock();
 
 	_zoom = zoom;
 
-	//_mutex.unlock();
+	_mutex.unlock();
 }
 
 void Renderer::setWindowTitle(const std::string& title){
-	//_mutex.lock();
+	_mutex.lock();
 
 	_title = title;
 
-	//_mutex.unlock();
+	_mutex.unlock();
 }
 
 void Renderer::setWindowSize(const glm::vec2& size){
@@ -295,26 +295,26 @@ bool Renderer::running(){
 }
 
 void Renderer::drawLine(const glm::vec2& start, const glm::vec2& end, const glm::vec3& colour){
-	//_mutex.lock();
+	_mutex.lock();
 
 	if (_running)
 		_lineBuffer.push_back(Line(start, end, colour));
 
-	//_mutex.unlock();
+	_mutex.unlock();
 }
 
 void Renderer::drawPoint(const glm::vec2& point, const glm::vec3& colour){
-	//_mutex.lock();
+	_mutex.lock();
 
 	if (_running)
 		_pointBuffer.push_back(Point(point, 5.f, colour));
 
-	//_mutex.unlock();
+	_mutex.unlock();
 }
 
 
 void Renderer::setGraph(unsigned int layer, float xLength, float yMin, float yMax, bool scrolling){
-	//_mutex.lock();
+	_mutex.lock();
 
 	if (layer >= 8)
 		return;
@@ -323,17 +323,18 @@ void Renderer::setGraph(unsigned int layer, float xLength, float yMin, float yMa
 
 	_graphs[layer].active = true;
 
+	_graphs[layer].xOffset = 0.f;
 	_graphs[layer].xLength = xLength;
 	_graphs[layer].yMin = yMin;
 	_graphs[layer].yMax = yMax;
 
 	_graphs[layer].scrolling = scrolling;
 
-	//_mutex.unlock();
+	_mutex.unlock();
 }
 
 void Renderer::drawGraph(const glm::vec2& point, unsigned int layer){
-	//_mutex.lock();
+	_mutex.lock();
 
 	if (_running){
 		if (layer >= 8)
@@ -342,5 +343,5 @@ void Renderer::drawGraph(const glm::vec2& point, unsigned int layer){
 		_graphs[layer].points.push_back(point);
 	}
 
-	//_mutex.unlock();
+	_mutex.unlock();
 }

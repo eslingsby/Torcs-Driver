@@ -14,32 +14,32 @@
 typedef std::map<unsigned int, BaseDriver*> DriverMap;
 
 void parseArgs(int argc, char* argv[], std::string& hostName, bool& rendering){
-	rendering = false;
+	rendering = true;
 	hostName = "localhost";
 	
 	if (argc == 3){
-		if ((std::string)argv[1] == "render"){
-			rendering = true;
+		if ((std::string)argv[1] == "silent"){
+			rendering = false;
 			hostName = argv[2];
 		}
-		else if ((std::string)argv[2] == "render"){
-			rendering = true;
+		else if ((std::string)argv[2] == "silent"){
+			rendering = false;
 			hostName = argv[1];
 		}
 	}
 	else if (argc == 2){
-		if ((std::string)argv[1] == "render")
-			rendering = true;
+		if ((std::string)argv[1] == "silent")
+			rendering = false;
 		else
 			hostName = argv[1];
 	}
 }
 
 void makeDrivers(DriverMap& drivers){
-	drivers[3001] = new MyDriver(true);
-	//drivers[3002] = new SimpleDriver;
-	//drivers[3003] = new OldDriver;
-	//drivers[3004] = new OldDriver;
+	drivers[3001] = new MyDriver(1);
+	drivers[3002] = new MyDriver;
+	drivers[3003] = new MyDriver;
+	drivers[3004] = new MyDriver;
 }
 
 int main(int argc, char* argv[]){
@@ -47,8 +47,7 @@ int main(int argc, char* argv[]){
 
 	// Set hostName and startPort using args, or default "localhost" and 3001
 	std::string hostName;
-
-	bool rendering = true;
+	bool rendering;
 
 	parseArgs(argc, argv, hostName, rendering);
 
