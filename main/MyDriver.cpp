@@ -4,20 +4,24 @@
 #include "Utils.hpp"
 #include <glm\gtc\constants.hpp>
 
+// Track sensors
+const float MyDriver::_trackAngles[19] = { -90, -80, -70, -60, -50, -40, -30, -20, -10, 0, 10, 20, 30, 40, 50, 60, 70, 80, 90 };
+
 // Gear RPM changes from SimpleDriver
-//const int MyDriver::_gearUp[6] = { 5000, 6000, 6000, 6500, 7000, 0 };
-//const int MyDriver::_gearDown[6] = { 0, 2000, 3000, 3000, 3500, 3500 };
-const int MyDriver::_gearUp[6] = { 5000, 6000, 6000, 6500, 7000, 0 };
-const int MyDriver::_gearDown[6] = { 0, 2500, 3000, 3000, 3500, 3500 };
+const int MyDriver::_gearUp[6] = { 5000, 6000, 6000, 6500, 7000, 0 }; //{ 5000, 6000, 6000, 6500, 7000, 0 };
+const int MyDriver::_gearDown[6] = { 0, 2500, 3000, 3000, 3500, 3500 }; //{ 0, 2000, 3000, 3000, 3500, 3500 };
 
-// Max track sensors a single opponent can block
-const int MyDriver::_maxBlock = 6;
-
+// 0 = doesn't care, 1 = stays in the middle
 const float MyDriver::_middleDrift = 0.001f; //0.005f;
 
+// 0 = no awarness, 1 = full awarness
 const float MyDriver::_awarnessTrack = 0.7f;
 const float MyDriver::_awarnessOpponent = 0.125f;
 
+// Sensors a single opponent can block
+const int MyDriver::_maxBlock = 6;
+
+// 0 = full ease, 1 = no ease
 const float MyDriver::_easeSteer = 0.5f; //0.5f;
 const float MyDriver::_easeBrake = 0.1f;
 const float MyDriver::_easeAccel = 0.1f; //0.05f;
@@ -33,12 +37,15 @@ void MyDriver::onShutdown(){
 }
 
 void MyDriver::init(float* angles){
-	float newAngles[36] = { -90, -80, -70, -60, -50, -40, -30, -20, -10, 0, 10, 20, 30, 40, 50, 60, 70, 80, 90 };
-
 	if (angles != nullptr){
 		for (int i = 0; i < 19; i++)
-			angles[i] = newAngles[i];
+			angles[i] = _trackAngles[i];
 	}
+
+	_timeCurrent = Clock::now();
+	_timePrevious = _timeCurrent;
+
+	_dt = _timeCurrent - _timePrevious;
 
 	_runtime = Milliseconds::zero();
 
@@ -122,9 +129,6 @@ CarControl MyDriver::wDrive(CarState cs){
 			continue;
 
 		// Calculate amount of track sensors to block, and round to nearest even integer
-		//float raw = glm::tan((distance / 100.f) * glm::half_pi<float>());
-		//float raw = distance / 50.f; //(before _awarnessOpponent)
-		//float raw = distance / ((_awarnessOpponent * 200.f) * 2.f);
 		float raw = distance / (_awarnessOpponent * 200.f);
 
 		float block = ((1.f - raw) * (float)((_maxBlock - 2) + 2));
@@ -133,8 +137,6 @@ CarControl MyDriver::wDrive(CarState cs){
 
 		// Apply smaller distances to sensor array
 		for (int x = block / 2; x >= -(block / 2 - 1); x--){
-			//std::cout << "x - " << x << "\n";
-
 			int sensor = (i + x) % 36;
 		
 			if (_driving.sensors[sensor] > distance)
@@ -159,7 +161,6 @@ CarControl MyDriver::wDrive(CarState cs){
 	float steer = (changeRange(0.f, 18.f, 1.5f, -1.5f, maxSensor) - (cs.getTrackPos() / 500.f)) - cs.getTrackPos() * _middleDrift;
 
 	_driving.steer = glm::mix(_driving.steer, steer, _easeSteer);
-	//_driving.steer = newSteer;
 
 
 	// Speed control
@@ -174,6 +175,7 @@ CarControl MyDriver::wDrive(CarState cs){
 	else
 		_driving.brake = 0.f;
 
+
 	// Changing gears
 	int gear = cs.getGear();
 	int rpm = cs.getRpm();
@@ -186,15 +188,6 @@ CarControl MyDriver::wDrive(CarState cs){
 	else
 		if (gear > 1 && rpm <= _gearDown[gear - 1])
 			_driving.gear = gear - 1;
-
-
-	// Applying to controller
-	CarControl cc;
-
-	cc.setGear(_driving.gear);
-	cc.setAccel(_driving.speed);
-	cc.setSteer(_driving.steer);
-	cc.setBrake(_driving.brake);
 
 
 	// If logging, render sensors
@@ -222,6 +215,15 @@ CarControl MyDriver::wDrive(CarState cs){
 		Renderer::get().setRotation(cs.getAngle() * 90.f);
 		Renderer::get().setZoom(1.f + cs.getSpeedX() / 200.f);
 	}
+
+
+	// Applying to controller
+	CarControl cc;
+
+	cc.setGear(_driving.gear);
+	cc.setAccel(_driving.speed);
+	cc.setSteer(_driving.steer);
+	cc.setBrake(_driving.brake);
 
 	return cc;
 }

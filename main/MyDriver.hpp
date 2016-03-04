@@ -15,6 +15,8 @@ class MyDriver : public WrapperBaseDriver{
 
 	const bool _log;
 
+	static const float _trackAngles[19];
+
 	static const int _gearUp[6];
 	static const int _gearDown[6];
 
