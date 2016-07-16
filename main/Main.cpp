@@ -1,19 +1,27 @@
+#include <TorcsClient.hpp>
+#include "Renderer.hpp"
+
 #include <thread>
 #include <list>
 #include <string>
 #include <map>
 
-#include <TorcsClient.hpp>
-
 #include <SimpleDriver.h>
 #include "MyDriver.hpp"
 #include "OldDriver.hpp"
 
-#include "Renderer.hpp"
-
 typedef std::map<unsigned int, BaseDriver*> DriverMap;
 
+void makeDrivers(DriverMap& drivers){
+	drivers[3001] = new MyDriver(true);
+
+	drivers[3002] = new MyDriver;
+	drivers[3003] = new MyDriver;
+	drivers[3004] = new MyDriver;
+}
+
 void parseArgs(int argc, char* argv[], std::string& hostName, bool& rendering){
+	// Default argument values
 	rendering = true;
 	hostName = "localhost";
 	
@@ -33,13 +41,6 @@ void parseArgs(int argc, char* argv[], std::string& hostName, bool& rendering){
 		else
 			hostName = argv[1];
 	}
-}
-
-void makeDrivers(DriverMap& drivers){
-	drivers[3001] = new MyDriver(1);
-	drivers[3002] = new MyDriver;
-	drivers[3003] = new MyDriver;
-	drivers[3004] = new MyDriver;
 }
 
 int main(int argc, char* argv[]){

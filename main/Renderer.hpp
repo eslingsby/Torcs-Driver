@@ -10,45 +10,45 @@
 #include <array>
 #include <mutex>
 
-struct Line{
-	const glm::vec2 start;
-	const glm::vec2 end;
-	const glm::vec3 colour;
-
-	Line(const glm::vec2& start, const glm::vec2& end, const glm::vec3& colour) :
-		start(start),
-		end(end),
-		colour(colour){
-	}
-};
-
-struct Point{
-	const glm::vec2 point;
-	const float size;
-	const glm::vec3 colour;
-
-	Point(const glm::vec2& point, float size, const glm::vec3& colour) :
-		point(point),
-		size(size),
-		colour(colour){
-	}
-};
-
-struct Graph{
-	bool active = false;
-
-	float xLength = 1000.f;
-	float xOffset = 0.f;
-
-	float yMin = -1.f;
-	float yMax = 1.f;
-
-	bool scrolling = false;
-
-	std::vector<glm::vec2> points;
-};
-
 class Renderer{
+	struct Line{
+		const glm::vec2 start;
+		const glm::vec2 end;
+		const glm::vec3 colour;
+
+		Line(const glm::vec2& start, const glm::vec2& end, const glm::vec3& colour) :
+			start(start),
+			end(end),
+			colour(colour){
+		}
+	};
+
+	struct Point{
+		const glm::vec2 point;
+		const float size;
+		const glm::vec3 colour;
+
+		Point(const glm::vec2& point, float size, const glm::vec3& colour) :
+			point(point),
+			size(size),
+			colour(colour){
+		}
+	};
+
+	struct Graph{
+		bool active = false;
+
+		float xLength = 1000.f;
+		float xOffset = 0.f;
+
+		float yMin = -1.f;
+		float yMax = 1.f;
+
+		bool scrolling = false;
+
+		std::vector<glm::vec2> points;
+	};
+
 	std::string _title = "SDL";
 	glm::vec2 _size = { 640, 480 };
 

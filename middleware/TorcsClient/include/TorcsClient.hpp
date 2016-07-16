@@ -16,6 +16,22 @@
 
 void race_thread(const std::string& hostName, unsigned int port, BaseDriver* driver);
 
+/*
+Edited version of the Torcs competition client created by Daniele Loiacono.
+https://sourceforge.net/projects/cig/files/SCR%20Championship/
+
+Functionally very similar, however is re-factored inside a class as to allow for threading.
+
+	BaseDriver* driver = new SimpleDriver;
+
+	std::thread race = std::thread(race_thread, "localhost", 3001, driver);
+
+	race.join();
+
+	delete driver;
+
+*/
+
 class TorcsClient{
 	std::string _hostName;
 	unsigned int _serverPort;

@@ -3,13 +3,11 @@
 #include "Renderer.hpp"
 #include "Utils.hpp"
 #include <glm\gtc\constants.hpp>
+#include <random>
 
 #define ALL_SENSORS 36
 #define HALF_SENSORS 19
 #define QUART_SENSORS 9
-
-// Stunt divisor for drivers not being logged, 1.f = un-stunted
-const float MyDriver::_nonLoggingStunt = 0.75f;
 
 // Track sensors
 const float MyDriver::_trackAngles[HALF_SENSORS] = { -90, -80, -70, -60, -50, -40, -30, -20, -10, 0, 10, 20, 30, 40, 50, 60, 70, 80, 90 };
@@ -22,8 +20,8 @@ const int MyDriver::_gearDown[6] = { 0, 2500, 3000, 3000, 3500, 3500 }; //{ 0, 2
 const float MyDriver::_middleDrift = 0.f; //0.001f;
 
 // 0 = no awarness, 1 = full awarness
-const float MyDriver::_awarnessTrack = 0.8f;
-const float MyDriver::_awarnessOpponent = 0.135f; // 0.135f;
+const float MyDriver::_awarnessTrack = 0.75f;
+const float MyDriver::_awarnessOpponent = 0.15f; // 0.135f;
 
 // Sensors a single opponent can block
 const int MyDriver::_maxBlock = 6;
@@ -36,17 +34,20 @@ const float MyDriver::_easeSteer = 1.f; //0.5f;
 const float MyDriver::_easeBrake = 0.1f;
 const float MyDriver::_easeAccel = 0.1f; //0.05f;
 
+// Length of PID steering integral history
 const unsigned int MyDriver::_historySteerLength = 8;
 
+// PID multipliers
 const float MyDriver::_p = 0.25f;
-const float MyDriver::_i = 0.075f;//0.1f;
+const float MyDriver::_i = 0.085f; //0.1f;
 const float MyDriver::_d = 0.7f;
 
+//Un-comment following for proportional only
 //const float MyDriver::_p = 1.f;
 //const float MyDriver::_i = 0.f;
 //const float MyDriver::_d = 0.f;
 
-MyDriver::MyDriver(unsigned int logging) : _logging(logging){}
+MyDriver::MyDriver(bool logging, float speedRestrict) : _logging(logging), _speedRestrict(speedRestrict){}
 
 void MyDriver::onRestart(){
 	init();
@@ -74,14 +75,26 @@ void MyDriver::init(float* angles){
 
 	if (_logging){
 		Renderer::get().setGraph(0, 100.f, -0.5f, 0.5f, true);
-		Renderer::get().setGraph(1, 100.f, -0.5f, 0.5f, true);
-		Renderer::get().setGraph(2, 100.f, -0.5f, 0.5f, true);
-		Renderer::get().setGraph(3, 100.f, -0.5f, 0.5f, true);
-		Renderer::get().setGraph(4, 100.f, 0.f, 100.f, true);
+		Renderer::get().setGraph(1, 100.f, 0.f, 2.f, true);
+		Renderer::get().setGraph(2, 100.f, 0.f, 2.f, true);
+	}
+
+	std::uniform_int_distribution<> rng(10, 50);
+
+	if (!_logging){
+		std::random_device rd;
+		std::mt19937 gen(rd());
+
+		std::uniform_int_distribution<> dis(10, 50);
+
+		_speedRestrict = dis(gen) / 100.f;
+
+		std::cout << "Set restrict to " << _speedRestrict << ".\n";
 	}
 }
 
 CarControl MyDriver::wDrive(CarState cs){
+	// Update clock variables for graphing over time
 	_timePrevious = _timeCurrent;
 	_timeCurrent = Clock::now();
 
@@ -91,7 +104,8 @@ CarControl MyDriver::wDrive(CarState cs){
 	if (_logging)
 		Renderer::get().setWindowTitle(std::to_string(_dt.count()));
 
-	// Copy old sensors to delta and reset sensors with max distance
+
+	// Temporarily copy old sensors to delta and reset sensors with max distance
 	memcpy(&_driving.delta[0], &_driving.sensors[0], sizeof(_driving.sensors));
 	std::fill_n(_driving.sensors, ALL_SENSORS, 200.f);
 	
@@ -114,6 +128,7 @@ CarControl MyDriver::wDrive(CarState cs){
 	else if (_driving.crashed)
 		_driving.crashed = false;
 	
+
 	// Iterate through opponent sensors
 	for (int i = 0; i < ALL_SENSORS; i++){
 		//std::cout << "i - " << i << "\n";
@@ -157,7 +172,10 @@ CarControl MyDriver::wDrive(CarState cs){
 	}
 
 
-	// Adding boost to previous furthest ray
+	// Decreasing sensors around furthest ray 
+	//		if furthest ray is on left, decrease right sensors 
+	//		if furthest ray is on right, decrease left sensors
+	//		if furthest ray is in the middle, decrease both sides sensors
 	if (_driving.furthestRay <= QUART_SENSORS){
 		for (int i = _driving.furthestRay; i < HALF_SENSORS; i++){
 			_driving.sensors[QUART_SENSORS + i] *= changeRange(_driving.furthestRay, 18, 1, 0, i);
@@ -223,10 +241,9 @@ CarControl MyDriver::wDrive(CarState cs){
 
 	// Speed control
 	if (!_driving.crashed){
-		float speed = _driving.sensors[_driving.furthestRay + QUART_SENSORS] / (200.f * _awarnessTrack) + _driving.delta[_driving.furthestRay + QUART_SENSORS] * 4.f;
+		float speed = _driving.sensors[_driving.furthestRay + QUART_SENSORS] / (200.f * _awarnessTrack) + _driving.delta[_driving.furthestRay + QUART_SENSORS] * 8.f;
 
-		if (!_logging)
-			speed *= _nonLoggingStunt;
+		speed *= (1.f - _speedRestrict);
 
 		_driving.speed = glm::mix(_driving.speed, speed, _easeAccel); //*(1.f - cs.getTrack(QUART_SENSORS)) * brake;
 
@@ -255,10 +272,9 @@ CarControl MyDriver::wDrive(CarState cs){
 
 	// If logging, render sensors
 	if (_logging){
-		//Renderer::get().drawGraph({ _runtime.count() / 100.f, proportional }, 0);
-		//Renderer::get().drawGraph({ _runtime.count() / 100.f, integral }, 1);
-		//Renderer::get().drawGraph({ _runtime.count() / 100.f, derivative }, 2);
-		Renderer::get().drawGraph({ _runtime.count() / 100.f, _driving.steer }, 3);
+		Renderer::get().drawGraph({ _runtime.count() / 100.f, _driving.steer }, 0);
+		Renderer::get().drawGraph({ _runtime.count() / 100.f, _driving.speed }, 1);
+		Renderer::get().drawGraph({ _runtime.count() / 100.f, _driving.brake }, 2);
 
 		for (int i = 0; i < ALL_SENSORS; i++){
 			float distance = _driving.sensors[i];
@@ -280,12 +296,12 @@ CarControl MyDriver::wDrive(CarState cs){
 			Renderer::get().drawLine({ 0, 0 }, point * distance * zoom, colour);
 		}
 
-		// Cool effects
-		//Renderer::get().setRotation(cs.getAngle() * 90.f);
-		//Renderer::get().setZoom(1.f + cs.getSpeedX() / 200.f);
-
 		if (_driving.crashed)
 			std::cout << "Crashed!\n";
+
+		// Un-comment for pointless cool effects
+		Renderer::get().setRotation(cs.getAngle() * 90.f);
+		Renderer::get().setZoom(1.f + cs.getSpeedX() / 200.f);
 	}
 
 

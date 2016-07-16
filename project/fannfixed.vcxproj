@@ -61,6 +61,8 @@
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_USRDLL;FANN_DLL_EXPORTS;WIN32;_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)middleware\FANN-2.2.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ForcedIncludeFiles>$(SolutionDir)middleware\FANN-2.2.0\include\fixedfann.h</ForcedIncludeFiles>
+      <DisableSpecificWarnings>
+      </DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -78,6 +80,8 @@
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_USRDLL;FANN_DLL_EXPORTS;WIN32;_WINDOWS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)middleware\FANN-2.2.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ForcedIncludeFiles>$(SolutionDir)middleware\FANN-2.2.0\include\fixedfann.h</ForcedIncludeFiles>
+      <DisableSpecificWarnings>
+      </DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

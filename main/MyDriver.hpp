@@ -14,9 +14,8 @@ class MyDriver : public WrapperBaseDriver{
 	Milliseconds _dt = _timeCurrent - _timePrevious;
 	Milliseconds _runtime = Milliseconds::zero();
 
-	unsigned int _logging;
-
-	static const float _nonLoggingStunt;
+	bool _logging;
+	float _speedRestrict;
 
 	static const float _trackAngles[19];
 
@@ -42,24 +41,24 @@ class MyDriver : public WrapperBaseDriver{
 	static const unsigned int _historySteerLength;
 
 	struct{
-		float sensors[36];
-		float delta[36];
+		float sensors[36]; // Culmination of 36 opponent sensors and 19 track sensors
+		float delta[36]; // Difference between this state's sensors and previous state's
 
-		unsigned int furthestRay = 9;
+		unsigned int furthestRay = 9; // The sensor which the driver will steer towards
 
-		float steer = 0.f;
-		std::vector<float> steerHistory;
+		float steer = 0.f; // Steering angle target
+		std::vector<float> steerHistory; // Steering angle history
 		
-		int gear = 1;
+		int gear = 1; // Gear target
 
-		float speed = 0.f;
-		float brake = 0.f;
+		float speed = 0.f; // Speed target
+		float brake = 0.f; // Brake target
 
-		bool crashed = false;
+		bool crashed = false; // If the driver has crashed or not
 	}_driving;
 
 public:
-	MyDriver(unsigned int logging = 0);
+	MyDriver(bool logging = false, float speedRestrict = 0.f);
 
 	void onRestart();
 	void onShutdown();
